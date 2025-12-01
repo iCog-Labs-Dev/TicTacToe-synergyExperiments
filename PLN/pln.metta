@@ -450,10 +450,34 @@
 
 ;;Pose a question of a certain term to the system on some knowledge base
 (= (PLN.Query $Tasks $Beliefs $term $maxsteps $taskqueuesize $beliefqueuesize)
-   (BestCandidate ConfidenceRank () (collapse (let ($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize)
-                                                   (case (superpose $BeliefsRet)
-                                                         (((Sentence ($Term $TV) $Ev) (case (== $Term $term)
-                                                                                            ((True ($TV $Ev)))))))))))
+   ;; (let*
+   ;; (
+   ;;   (($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize))
+   ;;   ($bestCandidate (BestCandidate ConfidenceRank () (collapse (case (superpose $BeliefsRet)
+   ;;                                   (((Sentence ($Term $TV) $Ev) (case (== $Term $term)
+   ;;                                                                     ((True ($TV $Ev))))))))))
+   ;; )
+   ;; ($bestCandidate $BeliefsRet)
+   ;; )
+   ;;
+   (let*
+   (
+     (($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize))
+     ($candidates (collapse (case (superpose $BeliefsRet)
+                                     (((Sentence ($Term $TV) $Ev) (case (== $Term $term)
+                                                                       ((True ($Term ($TV $Ev))))))))))
+     ($stvs (collapse (let ($term $stv) (superpose $candidates) $stv)))
+     ($bestStv (BestCandidate ConfidenceRank () $stvs))
+     ($bestCandidate (collapse (let ($term $bestStv) (superpose $candidates) ($term $bestStv))))
+   )
+   $bestCandidate
+   ;; $candidates
+   )
+   ;; (BestCandidate ConfidenceRank () (collapse (let ($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize)
+   ;;                                                 (case (superpose $BeliefsRet)
+   ;;                                                       (((Sentence ($Term $TV) $Ev) (case (= $Term $term)
+   ;;                                                                                        ((True ($TV $Ev))))))))))
+)
 
 (= (PLN.Query $kb $term $maxsteps $taskqueuesize $beliefqueuesize)
    (PLN.Query $kb $kb $term $maxsteps $taskqueuesize $beliefqueuesize))
