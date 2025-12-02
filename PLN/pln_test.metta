@@ -73,9 +73,9 @@
            (Sentence ((Implication (Inheritance $1 Game_Win_O) (Inheritance $1 Game_Lose_X)) (stv 1.0 1.0)) (3))
            (Sentence ((Equivalence (Board (Row $TL (Col $TC $TR)) (Rows (Row $ML (Col $MC $MR)) (Row $BL (Col $BC $BR)))) (Board (Row $TR (Col $TC $TL)) (Rows (Row $MR (Col $MC $ML)) (Row $BR (Col $BC $BL))))) (stv 1.0 1.0)) (4))
            (Sentence ((Equivalence (Board $TopRow (Rows $MidRow $BotRow)) (Board $BotRow (Rows $MidRow $TopRow))) (stv 1.0 1.0)) (5))
-           (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $20 (Col $10 $00)) (Rows (Row $21 (Col $11 $01)) (Row $22 (Col $12 $02))))) (stv 1.0 1.0)) (72))
-           (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $22 (Col $12 $02)) (Rows (Row $21 (Col $11 $01)) (Row $20 (Col $10 $00))))) (stv 1.0 1.0)) (73))
-           (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $00 (Col $10 $20)) (Rows (Row $01 (Col $11 $21)) (Row $02 (Col $12 $22))))) (stv 1.0 1.0)) (74))
+           ;; (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $20 (Col $10 $00)) (Rows (Row $21 (Col $11 $01)) (Row $22 (Col $12 $02))))) (stv 1.0 1.0)) (72))
+           ;; (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $22 (Col $12 $02)) (Rows (Row $21 (Col $11 $01)) (Row $20 (Col $10 $00))))) (stv 1.0 1.0)) (73))
+           ;; (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $00 (Col $10 $20)) (Rows (Row $01 (Col $11 $21)) (Row $02 (Col $12 $22))))) (stv 1.0 1.0)) (74))
 
            (Sentence ((Implication (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E))))) (stv 0.08334166666666666 0.1935483870967742)) (6))
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row O (Col E E))))) (stv 0.08334166666666666 0.1935483870967742)) (7))
@@ -196,13 +196,13 @@
 ;; !(STV Game_Win_O)
 
 
-;; For a new move:
+;; INFO: For a new move:
 ;;     - If it has a small stv value randomly assigned with MOSES, it has a chance of not being selected and get truncated everytime. Therefore the number should be higher. 
 ;;     - Not both the strength and the confidence have to be higher, the confidence is the most determining factor here. For some reason if the confidence is too low, it will be truncated. We can mitigate this by increasing the step size but it is not reliable. For comparison, with iteration 500 and task size of 500, it can't find reliable results when K > 66 but for 1000 step size keeping task size the same, it can support all the way upto 700.
 ;;     - If the outcome of the move isn't known for sure, because PLN hasn't seen it before hand, then this will be a problem so defaulting to what the next most popular move is should be considered.
 ;;     - We need to populate the implication links in the space after MOSES has generated it's candidates, and if it can not find moves that are not being repeated, it will just give all moves the same weight kind of like uniform randomness.
 ;;     - Adding single board state moves will also be needed for computing STV values for a single game.
-;;     - If you change the pln to check with unification instead of equality, can query for the next best move but with the risk of generating an invalid move. Not that it matters a lot though. Because the invalid move will most likely have a lower stv value so you can filter it out. But it can still turn up if the exact generalized rule can be matched. Unless there's a way to dea lwith that, it's is best to stick with the concrete query, or atleast as concrete as possible. (This is happening by matching the move on it's self and succeeding the unification hence being returned)
+;;     - If you change the pln to check with unification instead of equality, can query for the next best move but with the risk of generating an invalid move. Not that it matters a lot though. Because the invalid move will most likely have a lower stv value so you can filter it out. But it can still turn up if the exact generalized rule can be matched. Unless there's a way to deal with that, it is best to stick with the concrete query, or atleast as concrete as possible. (This is happening by matching the move on its self and succeeding the unification hence being returned)
 ;;
 ; !(let* (
 ;          ($query (Inheritance (Board (Row X (Col E E))
@@ -230,7 +230,7 @@
 ;; !(PLN.Query (collapse (get-atoms &belief)) (Implication (Board (Row X (Col E E)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col O E)) (Row E (Col E E))))) 200 100 200)
 
 ; !(println! (Second move score))
-; !(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row E (Col X E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) Game_Win_X) 200 100 200)
+!(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row E (Col X E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) Game_Win_X) 200 100 200)
 
 ; !(println! (Third move score))
 ; !(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row E (Col E X)) (Rows (Row E (Col E E)) (Row E (Col E E)))) Game_Win_X) 200 100 200)
