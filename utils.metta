@@ -51,3 +51,5 @@
        (cons-atom $a (range (+ $a 1) $b) )))
 
 (= (compose $f $g $x) ($f ($g $x)))
+
+(= (sum $a) (foldl + $a 0))

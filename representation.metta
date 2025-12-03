@@ -102,73 +102,119 @@
 
 (= (createQuery (Board $a)) (let $result (Board (zipWith mkVar $a (range (get-state &count) (+ (get-state &count) (+ (size-atom $a) 1))))) (let $_ (change-state! &count (+ (get-state &count) (+ (size-atom $a) 1)) ) $result)))
 
-(= (hammingDistance (Board $a) (Board $b))  (hammingDistance (Board $a) (Board $b) 0 0))
-(= (hammingDistance (Board $a) (Board $b) $current $count)
-   (if (or (= $a $b) (== $current (size-atom $a)))
-       (py-call (float "inf"))
-       (let*
-          (
-            ($index (index-atom $a $current))
-            ($a' (if (== $index E) (replace-atom X $current $a) $a))
-            )
-          (hammingDistance (Board $a') (Board $b) (+ $current 1) (if (== $a' $a) $count (+ $count 1))))))
+;; (= (hammingDistance (Board $a) (Board $b) $current $count)
+;;    (if (or (= $a $b) (== $current (size-atom $a)))
+;;        $count
+;;        (let*
+;;           (
+;;             ($index (index-atom $a $current))
+;;             ($a' (if (and (== $index E) (< $count 3)) (replace-atom X $current $a) $a))
+;;             )
+;;           (hammingDistance (Board $a') (Board $b) (+ $current 1) (if (== $a' $a) $count (+ $count 1))))))
 
-(= (nextMoves (Board $a) $mark)
-   (collapse 
-      (let $indices (map-atom
-                       (filter-atom
-                          (zip $a (range 0 (size-atom $a)))
-                          (compose (== E) (first-from-pair)))
-                       second-from-pair)
-        (Board (replace-atom $mark (superpose $indices) $a)))))
+(= (equalMark $mark $a $b) (if (and (== $a $mark) (== $b $mark)) 1 0))
+(= (similarity $a $b $mark) (sum (zipWith (equalMark $mark) $a $b)))
 
-(= (getQueries $currentState $mark)
-   (collapse (let*
-                (
-                  ($nextMoves (nextMoves $currentState $mark))
-                  ($nextMove (superpose $nextMoves))
-                  ($_ (println! (NextMove: $nextMove)))
-                  ($query (createQuery $nextMove))
-                  ($_ (println! (Query: $query)))
-                )
-                $query)))
+(= (hammingDistance (Board $a) (Board $b)) (hammingDistance (Board $a) (Board $b) 0 0 X))
+(= (hammingDistance (Board $a) (Board $b) $current $count $mark)
+   (let $similarity (similarity $a $b $mark)
+   (if (== $similarity 3)
+       $count
+       (if (and (== $current (size-atom $a)) (not (== $similarity 3)))
+           (py-call (float "inf"))
+           (let*
+              (
+                ($index (index-atom $a $current))
+                ($_ (println! (Inside hammingDistance with Current: $current and Count: $count)))
+                ($aNew (if (== $index E)
+                           (let*
+                               (
+                                 ($aNew (replace-atom X $current $a))
+                                 ($newSim (similarity $aNew $b $mark))
+                                 ($simChanged (not (== $newSim $similarity)))
+                                 ($_ (println! (simChanged: $simChanged )))
+                                 ($_ (println! (NewA: $newA)))
+                                 ($_ (println! (aNew: $aNew)))
+                                 ($_ (println! (a: $a)))
+                               )
+                               (if $simChanged $aNew $a)
+                           )
+                        $a
+                        ))
+              )
+              (hammingDistance (Board $aNew) (Board $b) (+ $current 1) (if (== $aNew $a) $count (+ $count 1)) $mark))))))
 
-(= (getValidWinningMoves $currentQuery) (trace! (Running Query $currentQuery) (collapse (match &self $currentQuery $currentQuery))))
+;; (
+;;   (Board (E E E X E E E E E))
+;;   ((Board (X X X X $_29272 $_29278 $_29284 $_29290 $_29296))
+;;    (Board (X $_29182 $_29188 X $_29200 $_29206 X $_29218 $_29224))
+;;    (Board (X $_29110 $_29116 X X $_29134 $_29140 $_29146 X))
+;;    (Board ($_29032 X $_29044 X X $_29062 $_29068 X $_29080))
+;;    (Board ($_28960 $_28966 X X $_28984 X $_28996 $_29002 X))
+;;    (Board ($_28888 $_28894 X X X $_28918 X $_28930 $_28936))
+;;    (Board ($_28816 $_28822 $_28828 X X X $_28852 $_28858 $_28864))
+;;    (Board ($_28744 $_28750 $_28756 X $_28768 $_28774 X X X))))
 
-!(let*
-    (
-      ($queries (getQueries (Board (E E E E E E E E E)) X))
-      ;; ($queries (getQueries (Board (E E E E E E E E E)) X))
-      ($query (superpose $queries))
-      ;; ($_ (println! (Query: $query)))
-      ($winningMoves (match &self $query $query))
-    )
-    ($winningMoves))
-
-;; !(getQueries (Board (E E E E E E E E E)) X)
-
-;; !(range 0 (size-atom (X E E E O E E E E)))
-;; !(compose (== E) (first-from-pair) (E 1))
-;; !(zip (X E E E O E E E E) (range 0 (size-atom (X E E E O E E E E))))
-;; !(filter-atom (zip (X E E E O E E E E) (range 0 (size-atom (X E E E O E E E E)))) (compose (== E) (first-from-pair)))
-;; !(nextMoves (Board (X E E E O E E E E)) X)
-;; !(range 1 3)
-;; !(zipWith mkVar (X E E E O E E E E) (1 2 3 4 5 6 7 8 9))
-;; !(zipWith + (1 2 3 4) (5 6 7 8))
-;; !(createQuery (Board (X E E E O E E E E)))
-;; !(createQuery (Board (X E E E O E E E E)))
-;; !(createQuery (Board (X E E E O E E E E)))
-;; !(mkVar E 1)
-;; !(selectionSort (1 5 3 4) (size-atom (1 2 3 4)) (comp >))
-;; !(selection (max <=) 5 (1 2 3 4 5 6 6 7 8 9))
-;; !(subtraction-atom (1 1 2 3 4) (1))
-;; !(exclude-item 1 (1 1 2 3 4))
-;; !(max 1 2 >)
-;; !(max-atom (1 2 3 4) <)
-;; !(foldleft < (2 3 4) 1)
-;; !(foldl + (cdr-atom (1 2 3 4)) (car-atom (1 2 3 4)))
-;; !(hammingDistance (Board (X E E E O E E E E)) (collapse (match &self (Board (X $b $c $d O $f $g $h $i)) (Board (X $b $c $d O $f $g $h $i)))))
-;; !(index-atom (A B C) 1)
-;; !(replace-atom B 0 (A B C))
-;; !(changeUntilUnify (Board (X E E E O E E E E)) (Board (X X X $a O $b $c $d $e)))
-;; !(foldl + (1 2 3 4) 0)
+;; !(hammingDistance (Board (X E E E E E E E E)) (Board (X X X $_25964 $_25970 $_25976 $_25982 $_25988 X)))
+;; !(hammingDistance (Board (E E E X E E E E E)) (Board (X A A X A A X A A)) 0 0 X)
+;; !(hammingDistance (Board (X E E E E E E E E)) (Board (X X X $_25964 $_25970 $_25976 $_25982 $_25988 X)))
+;; ;; !(hammingDistance (Board (X E E E E E E E E)) (Board (X X X $_25964 $_25970 $_25976 $_25982 $_25988 X)))
+;;
+;;
+;; (= (nextMoves (Board $a) $mark)
+;;    (collapse
+;;       (let $indices (map-atom
+;;                        (filter-atom
+;;                           (zip $a (range 0 (size-atom $a)))
+;;                           (compose (== E) (first-from-pair)))
+;;                        second-from-pair)
+;;         (Board (replace-atom $mark (superpose $indices) $a)))))
+;;
+;; (= (getMoveWinningMovePair $currentState $mark)
+;;    (let*
+;;     (
+;;       ($nextMoves (nextMoves $currentState $mark))
+;;       ($nextMove  (superpose $nextMoves))
+;;       ($query     (createQuery $nextMove))
+;;       ($_ (println! $query))
+;;       ($winningMoves (collapse (match &self $query $query)))
+;;     )
+;;     ($nextMove $winningMoves)))
+;;
+;;
+;; ;; !(let*
+;; ;;     (
+;; ;;       (($nextMove $winningMoves) (getMoveWinningMovePair (Board (E E E E E E E E E)) X))
+;; ;;       ($_ (println! ($nextMove $winningMoves)))
+;; ;;       ;; ($distanceMovePair (collapse (let $winningMove (superpose $winningMoves) ((hammingDistance $nextMove $winningMove) $winningMove))))
+;; ;;     )
+;; ;;     (($nextMove $distanceMovePair))
+;; ;; )
+;;
+;; ;; !(hammingDistance (Board (X E E E E E E E E)) (Board (X X X $_25964 $_25970 $_25976 $_25982 $_25988 X)))
+;; ;; !(getMoveWinningMovePair (Board (E E E E E E E E E)) X)
+;; ;; !(range 0 (size-atom (X E E E O E E E E)))
+;; ;; !(compose (== E) (first-from-pair) (E 1))
+;; ;; !(zip (X E E E O E E E E) (range 0 (size-atom (X E E E O E E E E))))
+;; ;; !(filter-atom (zip (X E E E O E E E E) (range 0 (size-atom (X E E E O E E E E)))) (compose (== E) (first-from-pair)))
+;; ;; !(nextMoves (Board (X E E E O E E E E)) X)
+;; ;; !(range 1 3)
+;; ;; !(zipWith mkVar (X E E E O E E E E) (1 2 3 4 5 6 7 8 9))
+;; ;; !(zipWith + (1 2 3 4) (5 6 7 8))
+;; ;; !(createQuery (Board (X E E E O E E E E)))
+;; ;; !(createQuery (Board (X E E E O E E E E)))
+;; ;; !(createQuery (Board (X E E E O E E E E)))
+;; ;; !(mkVar E 1)
+;; ;; !(selectionSort (1 5 3 4) (size-atom (1 2 3 4)) (comp >))
+;; ;; !(selection (max <=) 5 (1 2 3 4 5 6 6 7 8 9))
+;; ;; !(subtraction-atom (1 1 2 3 4) (1))
+;; ;; !(exclude-item 1 (1 1 2 3 4))
+;; ;; !(max 1 2 >)
+;; ;; !(max-atom (1 2 3 4) <)
+;; ;; !(foldleft < (2 3 4) 1)
+;; ;; !(foldl + (cdr-atom (1 2 3 4)) (car-atom (1 2 3 4)))
+;; ;; !(hammingDistance (Board (X E E E O E E E E)) (collapse (match &self (Board (X $b $c $d O $f $g $h $i)) (Board (X $b $c $d O $f $g $h $i)))))
+;; ;; !(index-atom (A B C) 1)
+;; ;; !(replace-atom B 0 (A B C))
+;; ;; !(hammingDistance (Board (X E E E O E E E E)) (Board (X X X $a O $b $c $d $e)))
+;; ;; !(foldl + (1 2 3 4) 0)
