@@ -336,9 +336,10 @@ class EvolutionaryEngine:
                     new_move = random.choice(valid_moves)
                     # Generate the new branch
                     next_board = tree.board.make_move(new_move, current_player)
+
                     # FIX: Pass depth=1 so the generator knows the child node
                     # represents an Opponent's turn (Odd Depth) and generates
-                    # all valid branches, not just one.
+                    # all valid branches (Broad Tree), not just one.
                     new_child = self.generator.generate(
                         next_board,
                         O_MARK if current_player == X_MARK else X_MARK,
@@ -349,35 +350,26 @@ class EvolutionaryEngine:
         for child in tree.children.values():
             self.mutate_tree(child, mutation_rate, current_player)
 
-    def evolve_population(
-        self,
-        population: List[Candidate],
-        opponent_pool: List[Candidate],
-        player_mark: str,
-    ):
-        # 1. Scoring
-        for cand in population:
-            # Reset stats
-            cand.games_played = 0
-            cand.losses = 0
-            # Play against random rival
-            rival = random.choice(opponent_pool)
-            if player_mark == X_MARK:
-                GameArena.score_candidates(cand, rival)
-            else:
-                GameArena.score_candidates(rival, cand)
-
-        # 2. Sort by Fitness (Ascending, 0 loss is best)
+    def generate_next_generation(
+        self, population: List[Candidate], player_mark: str
+    ) -> List[Candidate]:
+        """
+        Creates the next generation for a single population (X or O)
+        using Selection, Crossover, and Mutation.
+        """
+        # 1. Sort by Fitness (Ascending, 0 loss is best)
         population.sort(key=lambda x: x.fitness)
 
-        # Elitism: Keep top percentage
+        # 2. Elitism: Keep top percentage
         num_elites = max(1, int(self.pop_size * self.elitism_rate))
         next_gen = population[:num_elites]
 
         # 3. Breeding
+        # Select parents from the top half of population for better genetics
+        selection_pool_size = max(2, self.pop_size // 2)
+
         while len(next_gen) < self.pop_size:
-            # Select parents from the top half of population for better genetics
-            selection_pool_size = max(2, self.pop_size // 2)
+            # Selection from within the same population (intra-species)
             parent_a = random.choice(population[:selection_pool_size])
             parent_b = random.choice(population[:selection_pool_size])
 
@@ -401,8 +393,6 @@ class EvolutionaryEngine:
                         )
 
             # 4. Mutation
-            # Rate inversely proportional to fitness of parent (Better parent = Lower mutation)
-            # parent fitness is 0..1.
             mut_rate = self.mutation_rate_base + (parent_a.fitness * 0.5)
 
             if player_mark == X_MARK:
@@ -468,19 +458,50 @@ class EvolutionaryEngine:
         for g in range(self.generations):
             logger.info(f"--- Generation {g + 1} ---")
 
-            # Evolve X (Playing against current O)
-            self.population_x = self.evolve_population(
-                self.population_x, self.population_o, X_MARK
-            )
-            best_x = self.population_x[0]
-            logger.info(f"Best X: {best_x.to_string()}")
+            # 1. Reset Stats for everyone before evaluation
+            for c in self.population_x + self.population_o:
+                c.games_played = 0
+                c.losses = 0
+                c.wins = 0
+                c.fitness = 0.0
 
-            # Evolve O (Playing against current X)
-            self.population_o = self.evolve_population(
-                self.population_o, self.population_x, O_MARK
-            )
-            best_o = self.population_o[0]
-            logger.info(f"Best O: {best_o.to_string()}")
+            # 2. Evaluation Phase
+            # We engage in a Tournament where candidates play strictly against the
+            # opposing population.
+            # Total Games Goal = 200 per candidate.
+            # Strategy: Each candidate plays against 10 random opponents from the OTHER population.
+            # Rounds per opponent: 20. (10 opponents * 20 games = 200 total games).
+
+            rival_count = 10
+            games_per_rival = 20
+
+            # Evaluate X Population (Using O as Rivals)
+            for cand_x in self.population_x:
+                # Pick 10 random Os (with replacement is fine if pool is small, but sample is better)
+                rivals = random.choices(self.population_o, k=rival_count)
+                for rival_o in rivals:
+                    GameArena.score_candidates(cand_x, rival_o, rounds=games_per_rival)
+
+            # Evaluate O Population (Using X as Rivals)
+            for cand_o in self.population_o:
+                rivals = random.choices(self.population_x, k=rival_count)
+                for rival_x in rivals:
+                    GameArena.score_candidates(rival_x, cand_o, rounds=games_per_rival)
+
+            # Log Best of Current Generation
+            best_x_curr = min(self.population_x, key=lambda x: x.fitness)
+            best_o_curr = min(self.population_o, key=lambda o: o.fitness)
+
+            logger.info(f"Gen {g + 1} Best X Fitness: {best_x_curr.fitness:.3f}")
+            logger.info(f"Gen {g + 1} Best O Fitness: {best_o_curr.fitness:.3f}")
+
+            # 3. Reproduction Phase (Synchronous)
+            next_population_x = self.generate_next_generation(self.population_x, X_MARK)
+            next_population_o = self.generate_next_generation(self.population_o, O_MARK)
+
+            # 4. Update Populations
+            self.population_x = next_population_x
+            self.population_o = next_population_o
 
         # After evolution finishes, SORT and check the survivors
         # We re-sort to ensure we are looking at the absolute best from the final generation
@@ -597,11 +618,11 @@ if __name__ == "__main__":
     # Using small parameters for the demo execution
     # Elitism: 20% of 50 = 10 survivors per gen.
     engine = EvolutionaryEngine(
-        pop_size=50,
-        generations=20,
+        pop_size=100,
+        generations=500,
         max_depth=9,
-        elitism_rate=0.2,
-        mutation_rate_base=0.1,
+        elitism_rate=0.4,
+        mutation_rate_base=0.2,
     )
     best_x_policies, best_o_policies = engine.run()
 
