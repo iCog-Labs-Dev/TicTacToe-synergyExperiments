@@ -1,8 +1,4 @@
-(Sentence (Implication 
-             (Board (E E E
-                     E E E
-                     E E E))
-             (Board (E E E
+(Sentence (Implication (Board (E E E E E E E E E)) (Board (E E E
                      E X E
                      E E E))) (1 1 (0)))
 (Sentence (Implication 

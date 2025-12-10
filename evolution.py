@@ -261,14 +261,13 @@ class EvolutionaryEngine:
         self.population_x: List[Candidate] = []
         self.population_o: List[Candidate] = []
 
-    def initialize_populations(self):
+    def initialize_populations(self, initial_board=Board(["E"] * 9)):
         logger.info("Initializing X Population...")
-        empty_board = Board(["E"] * 9)
 
         for _ in range(self.pop_size):
             c = Candidate(X_MARK)
             # Generate random policy tree
-            c.policy_root = self.generator.generate(empty_board, X_MARK)
+            c.policy_root = self.generator.generate(initial_board, X_MARK)
             self.population_x.append(c)
 
         logger.info("Initializing O Population...")
@@ -277,7 +276,7 @@ class EvolutionaryEngine:
             # Generate forest for O (responses to all 9 openings)
             for i in range(9):
                 # X moves at i
-                board = empty_board.make_move(i, X_MARK)
+                board = initial_board.make_move(i, X_MARK)
                 # Generate O's response tree
                 c.policy_forest[i] = self.generator.generate(board, O_MARK)
             self.population_o.append(c)
@@ -452,8 +451,8 @@ class EvolutionaryEngine:
             formatted = f"(Sentence {expr} ({candidate_id} {turn_level} ({path_str})))"
             f.write(f"{formatted}\n")
 
-    def run(self):
-        self.initialize_populations()
+    def run(self, initial_game_board=Board(["E"] * 9)):
+        self.initialize_populations(initial_game_board)
 
         for g in range(self.generations):
             logger.info(f"--- Generation {g + 1} ---")
@@ -618,13 +617,15 @@ if __name__ == "__main__":
     # Using small parameters for the demo execution
     # Elitism: 20% of 50 = 10 survivors per gen.
     engine = EvolutionaryEngine(
-        pop_size=100,
-        generations=500,
-        max_depth=9,
-        elitism_rate=0.4,
-        mutation_rate_base=0.2,
+        pop_size=10,
+        generations=20,
+        max_depth=3,
+        elitism_rate=0.2,
+        mutation_rate_base=0.1,
     )
-    best_x_policies, best_o_policies = engine.run()
+
+    init_board = Board(["X", "O", "X", "E", "O", "E", "E", "E", "E"])
+    best_x_policies, best_o_policies = engine.run(init_board)
 
     print("\n=== Final Results ===")
     print("Top 3 X Policies:")
