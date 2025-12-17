@@ -1,4 +1,5 @@
 import random
+import copy
 import math
 
 # Constants
@@ -25,7 +26,12 @@ class Board:
 
     def to_string(self):
         s = self.state
-        return f"{s[0]} {s[1]} {s[2]}\n{s[3]} {s[4]} {s[5]}\n{s[6]} {s[7]} {s[8]}"
+
+        # formatting for display
+        def fmt(x):
+            return " " if x == EMPTY else x
+
+        return f" {fmt(s[0])} | {fmt(s[1])} | {fmt(s[2])} \n---+---+---\n {fmt(s[3])} | {fmt(s[4])} | {fmt(s[5])} \n---+---+---\n {fmt(s[6])} | {fmt(s[7])} | {fmt(s[8])} "
 
 
 class HammingScorer:
@@ -86,20 +92,27 @@ class GameActions:
     If success is False, the Board is returned unchanged.
     """
 
-    # Toggle to enable/disable smart move selection in play_corners/play_sides
-    enable_heuristics = True
+    # Toggle to enable/disable smart move selection
+    enable_heuristics = False
 
     @staticmethod
     def _pick_best_move(board, candidate_indices, player):
         """
         Helper: From a list of indices, pick the ones that result in the
-        lowest Hamming Distance to Win for 'player'. Tie-break randomly.
+        lowest Hamming Distance to Win for 'player'.
+
+        If heuristics are disabled, picks randomly from valid candidates.
         """
         valid_candidates = [i for i in candidate_indices if board.state[i] == EMPTY]
 
         if not valid_candidates:
             return None
 
+        # --- HEURISTIC TOGGLE ---
+        if not GameActions.enable_heuristics:
+            return random.choice(valid_candidates)
+
+        # --- SMART LOGIC ---
         scored_moves = []
         for move in valid_candidates:
             # Simulate
@@ -120,9 +133,10 @@ class GameActions:
     @staticmethod
     def play_center(board, player):
         """Try to play center (Index 4)."""
-        if board.state[4] == EMPTY:
+        move = GameActions._pick_best_move(board, [4], player)
+        if move is not None:
             new_board = board.copy()
-            new_board.make_move(4, player)
+            new_board.make_move(move, player)
             return True, new_board
         return False, board
 
@@ -130,15 +144,7 @@ class GameActions:
     def play_corners(board, player):
         """Try to play corners (0, 2, 6, 8). Uses heuristics if enabled."""
         corners = [0, 2, 6, 8]
-
-        move = None
-        if GameActions.enable_heuristics:
-            move = GameActions._pick_best_move(board, corners, player)
-        else:
-            valid_corners = [i for i in corners if board.state[i] == EMPTY]
-            if valid_corners:
-                move = random.choice(valid_corners)
-
+        move = GameActions._pick_best_move(board, corners, player)
         if move is not None:
             new_board = board.copy()
             new_board.make_move(move, player)
@@ -149,15 +155,7 @@ class GameActions:
     def play_sides(board, player):
         """Try to play sides (1, 3, 5, 7). Uses heuristics if enabled."""
         sides = [1, 3, 5, 7]
-
-        move = None
-        if GameActions.enable_heuristics:
-            move = GameActions._pick_best_move(board, sides, player)
-        else:
-            valid_sides = [i for i in sides if board.state[i] == EMPTY]
-            if valid_sides:
-                move = random.choice(valid_sides)
-
+        move = GameActions._pick_best_move(board, sides, player)
         if move is not None:
             new_board = board.copy()
             new_board.make_move(move, player)
@@ -166,7 +164,13 @@ class GameActions:
 
     @staticmethod
     def play_win(board, player):
-        """Only play if it results in an immediate win."""
+        """
+        Only play if it results in an immediate win.
+        Respects heuristic toggle: if disabled, it cannot 'see' the win.
+        """
+        if not GameActions.enable_heuristics:
+            return False, board
+
         # Check all valid moves. If any has dist=0, take it.
         all_moves = board.get_valid_moves()
         for move in all_moves:
@@ -178,7 +182,10 @@ class GameActions:
 
     @staticmethod
     def play_block(board, player):
-        """Only play if it blocks an opponent's immediate win."""
+        """
+        Only play if it blocks an opponent's immediate win.
+        (Note: The user specified 'first four actions' for heuristics, so block remains logic-driven).
+        """
         opponent = O_MARK if player == X_MARK else X_MARK
         all_moves = board.get_valid_moves()
 
@@ -274,3 +281,90 @@ class MinimaxOpponent(Opponent):
                 eval = self.minimax(sim_board, depth + 1, True, player_mark, opp_mark)
                 min_eval = min(min_eval, eval)
             return min_eval
+
+
+def save_policy_to_file(policy_actions, generation, fitness, player_mark):
+    """
+    Generates a Python file representing the policy logic.
+    filename format: gen_{generation}_score_{fitness:.2f}_{player_mark}.py
+    """
+    # Create a safe filename with score formatted to 2 decimals
+    filename = f"gen_{generation}_score_{int(fitness)}_{player_mark}.py"
+
+    with open(filename, "w") as f:
+        f.write("from game_engine import GameActions, Board, X_MARK, O_MARK\n\n")
+        f.write(f"# Generation: {generation}\n")
+        f.write(f"# Fitness: {fitness}\n")
+        f.write(f"# Player: {player_mark}\n\n")
+
+        f.write("def run_policy(board, player_mark):\n")
+
+        for action_key in policy_actions:
+            if action_key in ACTION_MAP:
+                # Use the function name from the action mapping to generate code
+                func_name = ACTION_MAP[action_key].__name__
+                f.write(f"    # Try {action_key}\n")
+                f.write(
+                    f"    success, new_board = GameActions.{func_name}(board, player_mark)\n"
+                )
+                f.write(f"    if success:\n")
+                f.write(f"        return new_board\n\n")
+
+        f.write("    return None\n")
+
+    print(f"Policy code saved to {filename}")
+
+
+def play_terminal_game(opponent_policy_func):
+    """
+    Runs a terminal-based game loop against a provided policy function.
+    opponent_policy_func: function(board, player_mark) -> new_board (or None)
+    """
+    print("\n--- Tic-Tac-Toe Terminal Arena ---")
+    human_mark = input("Choose your mark (X/O): ").upper()
+    while human_mark not in [X_MARK, O_MARK]:
+        human_mark = input("Invalid. Choose X or O: ").upper()
+
+    ai_mark = O_MARK if human_mark == X_MARK else X_MARK
+    print(f"You are {human_mark}. AI is {ai_mark}.")
+    print("Board positions are 0-8:")
+    print(" 0 | 1 | 2 \n---+---+---\n 3 | 4 | 5 \n---+---+---\n 6 | 7 | 8 ")
+
+    board = Board()
+    current_turn = X_MARK
+
+    while True:
+        print(f"\nCurrent Board:\n{board.to_string()}")
+        winner = HammingScorer.check_winner(board)
+        if winner:
+            print(f"Game Over! Winner: {winner}")
+            break
+        if board.is_full():
+            print("Game Over! It's a Draw.")
+            break
+
+        if current_turn == human_mark:
+            while True:
+                try:
+                    move_input = input(f"Your move ({human_mark}) [0-8]: ")
+                    if not move_input.strip():
+                        continue  # handle empty enter
+                    move = int(move_input)
+                    if move in board.get_valid_moves():
+                        board.make_move(move, human_mark)
+                        break
+                    else:
+                        print("Invalid move. Try again.")
+                except ValueError:
+                    print("Please enter a number 0-8.")
+        else:
+            print(f"AI ({ai_mark}) is thinking...")
+            new_board = opponent_policy_func(board, ai_mark)
+            if new_board:
+                board = new_board
+            else:
+                print("AI resigned (No move found). You win!")
+                break
+
+        # Switch turn
+        current_turn = O_MARK if current_turn == X_MARK else X_MARK

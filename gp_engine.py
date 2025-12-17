@@ -48,12 +48,18 @@ class PolicyGenome:
 
 class GPEngine:
     def __init__(
-        self, target_player, pop_size=20, mutation_rate=0.2, crossover_rate=0.7
+        self,
+        target_player,
+        pop_size=20,
+        mutation_rate=0.2,
+        crossover_rate=0.7,
+        minimax_depth=4,
     ):
         self.target_player = target_player
         self.pop_size = pop_size
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
+        self.minimax_depth = minimax_depth
         self.population = [PolicyGenome() for _ in range(pop_size)]
         self.available_genes = list(ACTION_MAP.keys())
 
@@ -61,20 +67,15 @@ class GPEngine:
         """
         Score against:
         1. Random Opponent (5 games)
-        2. Minimax Depth 1 (2 games)
-        3. Minimax Depth 2 (2 games)
-        4. Minimax Depth 3 (2 games)
-        5. Minimax Depth 4 (2 games)
+        2. Minimax Opponent (Progressive depth 1..N, 2 games each)
 
         Metric: Distance Advantage.
         """
-        opponents = [
-            (RandomOpponent(), 5),
-            (MinimaxOpponent(1), 2),
-            (MinimaxOpponent(2), 2),
-            (MinimaxOpponent(3), 2),
-            (MinimaxOpponent(4), 2),
-        ]
+        # Dynamic opponent generation
+        opponents = [(RandomOpponent(), 5)]
+
+        for d in range(1, self.minimax_depth + 1):
+            opponents.append((MinimaxOpponent(d), 2))
 
         total_score = 0
         total_games = 0

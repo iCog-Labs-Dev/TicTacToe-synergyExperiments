@@ -1,7 +1,7 @@
 import unittest
 import random
 from gp_engine import GPEngine, PolicyGenome
-from game_engine import Board, GameActions
+from game_engine import Board, GameActions, X_MARK, save_policy_to_file
 
 # ==========================================
 # UNIT TESTS
@@ -44,14 +44,23 @@ class TestEvolutionLogic(unittest.TestCase):
 # ==========================================
 
 
-def run_optimization(player, generations=20):
+def run_optimization(player, generations=20, minimax_max_depth=4):
     print(f"\n--- Evolving Policy for Player {player} ---")
     random.seed(42)
 
-    # Init GP Engine
+    # Init GP Engine with configurable depth
     engine = GPEngine(
-        target_player=player, pop_size=30, mutation_rate=0.3, crossover_rate=0.8
+        target_player=player,
+        pop_size=30,
+        mutation_rate=0.3,
+        crossover_rate=0.8,
+        minimax_depth=minimax_max_depth,
     )
+
+    # Calculate Theoretical Max Fitness
+    # Random(5) + Minimax(1..Depth * 2)
+    max_possible_score = 5.0 + (2.0 * minimax_max_depth)
+    print(f"Target Max Fitness: {max_possible_score:.1f}")
 
     for g in range(generations):
         best_policy = engine.step_generation()
@@ -59,24 +68,28 @@ def run_optimization(player, generations=20):
             f"Gen {g + 1}: Best Fitness = {best_policy.fitness:.2f} | Rule: {best_policy}"
         )
 
-        # Check if we found a very strong policy
-        # Max score calculation: 13 games. Max score 1.0 each. Total 13.0.
-        if best_policy.fitness >= 12.0:
-            print("Found Near-Perfect Policy!")
+        # Check if we found a very strong policy (Allowing for slight imperfection, e.g. 1 draw)
+        if best_policy.fitness >= (max_possible_score - 1.0):
+            print(
+                f"Found Strong Policy (Score {best_policy.fitness}/{max_possible_score})!"
+            )
             break
 
     print(f"\nWinner for {player}: {engine.population[0]}")
-    return engine.population[0]
+
+    best_policy = engine.population[0]
+    save_policy_to_file(best_policy.actions, generations, best_policy.fitness, player)
+    return best_policy
 
 
 if __name__ == "__main__":
-    # 1. Run Unit Tests
+    # # 1. Run Unit Tests
     # print("Running Tests...")
     # suite = unittest.TestLoader().loadTestsFromTestCase(TestGameLogic)
     # unittest.TextTestRunner(verbosity=1).run(suite)
 
-    # 2. Run Evolution for X
-    best_x = run_optimization("X", generations=15)
+    # 2. Run Evolution for X (Depth 4)
+    best_x = run_optimization("X", generations=15, minimax_max_depth=4)
 
-    # 3. Run Evolution for O
-    # best_o = run_optimization("O", generations=15)
+    # 3. Run Evolution for O (Depth 4)
+    best_o = run_optimization("O", generations=15, minimax_max_depth=4)
