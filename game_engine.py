@@ -33,6 +33,10 @@ class Board:
 
         return f" {fmt(s[0])} | {fmt(s[1])} | {fmt(s[2])} \n---+---+---\n {fmt(s[3])} | {fmt(s[4])} | {fmt(s[5])} \n---+---+---\n {fmt(s[6])} | {fmt(s[7])} | {fmt(s[8])} "
 
+    def to_linear_string(self):
+        """Returns the board in (Board (X E ...)) format for S-Expressions."""
+        return f"(Board ({' '.join(self.state)}))"
+
 
 class HammingScorer:
     """Calculates how close a player is to winning."""
@@ -184,7 +188,6 @@ class GameActions:
     def play_block(board, player):
         """
         Only play if it blocks an opponent's immediate win.
-        (Note: The user specified 'first four actions' for heuristics, so block remains logic-driven).
         """
         opponent = O_MARK if player == X_MARK else X_MARK
         all_moves = board.get_valid_moves()
@@ -366,5 +369,95 @@ def play_terminal_game(opponent_policy_func):
                 print("AI resigned (No move found). You win!")
                 break
 
-        # Switch turn
         current_turn = O_MARK if current_turn == X_MARK else X_MARK
+
+
+def simulate_game_dynamics(
+    board,
+    policy_actions,
+    depth,
+    player,
+    filename="policies.metta",
+    _current_depth=0,
+    game_id=1,
+    _path=(),
+):
+    """
+    Simulates game dynamics for a given policy and depth, saving transitions to a file.
+
+    Args:
+        board (Board): Current board state.
+        policy_actions (list): List of action strings (e.g. ['WIN', 'CENTER']).
+        depth (int): Max number of plies (turns) to simulate.
+        player (str): Current player to move.
+        filename (str): Output file.
+        _current_depth (int): Internal recursion tracker.
+        game_id (int): ID for the simulation set.
+        _path (tuple): Tuple of indices for the current branch.
+    """
+
+    # Stop conditions
+    winner = HammingScorer.check_winner(board)
+    if winner or board.is_full() or _current_depth >= depth:
+        return
+
+    opponent = O_MARK if player == X_MARK else X_MARK
+    prev_state_str = board.to_linear_string()
+
+    # 1. Execute Move Logic
+    next_boards = []  # List of (board, move_desc)
+
+    # Check whose turn it actually is on the board
+    x_count = board.state.count(X_MARK)
+    o_count = board.state.count(O_MARK)
+    current_turn_mark = X_MARK if x_count == o_count else O_MARK
+
+    if current_turn_mark == player:
+        # --- POLICY TURN ---
+        # Execute policy to get ONE deterministic move
+        moved = False
+        for action in policy_actions:
+            if action in ACTION_MAP:
+                success, new_board = ACTION_MAP[action](board, player)
+                if success:
+                    next_boards.append(new_board)
+                    moved = True
+                    break  # Policy picks first success
+
+        if not moved:
+            return
+
+    else:
+        # --- OPPONENT TURN ---
+        # Exhaustive simulation of all valid moves
+        valid_moves = board.get_valid_moves()
+        for move in valid_moves:
+            new_board = board.copy()
+            new_board.make_move(move, current_turn_mark)
+            next_boards.append(new_board)
+
+    # 2. Save Transitions and Recurse
+    with open(filename, "a") as f:
+        for i, nb in enumerate(next_boards):
+            next_state_str = nb.to_linear_string()
+
+            # Construct Unique ID: (GameID Turn PathTuple)
+            new_path = _path + (i,)
+            path_str = " ".join(map(str, new_path))
+            id_str = f"({game_id} {_current_depth + 1} ({path_str}))"
+
+            # Requested Format: (Sentence ((Implication PRE POST) (stv ...)) ID)
+            line = f"(Sentence ((Implication {prev_state_str} {next_state_str}) (stv 0.5 0.3)) {id_str})\n"
+            f.write(line)
+
+            # Recurse
+            simulate_game_dynamics(
+                nb,
+                policy_actions,
+                depth,
+                player,
+                filename,
+                _current_depth + 1,
+                game_id,
+                new_path,
+            )
