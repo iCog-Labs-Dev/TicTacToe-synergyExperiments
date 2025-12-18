@@ -1,5 +1,4 @@
 import random
-import copy
 import math
 
 # Constants
@@ -10,7 +9,35 @@ EMPTY = "E"
 
 class Board:
     def __init__(self, state=None):
-        self.state = state if state else [EMPTY] * 9
+        if isinstance(state, str):
+            # Parse string format: "(Board (X E ...))" or just raw string
+            cleaned = state.replace("(Board (", "").replace("))", "")
+            self.state = cleaned.split()
+            if len(self.state) != 9:
+                raise ValueError("Invalid board string format. Must have 9 elements.")
+        elif isinstance(state, list):
+            # Check for nested format ['Board', [...]]
+            if len(state) == 2 and state[0] == "Board" and isinstance(state[1], list):
+                self.state = state[1]
+            else:
+                # Assume flat list ['X', 'E', ...]
+                self.state = state
+        elif state is None:
+            self.state = [EMPTY] * 9
+        else:
+            raise ValueError("State must be a list or a string representation.")
+
+    @classmethod
+    def from_string(cls, board_str: str):
+        """
+        Parses string like:
+        (Board (
+          X E E
+          ...
+        ))
+        into a Board object. Kept for backward compatibility.
+        """
+        return cls(board_str)
 
     def copy(self):
         return Board(self.state.copy())
@@ -96,16 +123,14 @@ class GameActions:
     If success is False, the Board is returned unchanged.
     """
 
-    # Toggle to enable/disable smart move selection
-    enable_heuristics = False
+    # Toggle to enable/disable smart move selection in play_corners/play_sides
+    enable_heuristics = True
 
     @staticmethod
     def _pick_best_move(board, candidate_indices, player):
         """
         Helper: From a list of indices, pick the ones that result in the
-        lowest Hamming Distance to Win for 'player'.
-
-        If heuristics are disabled, picks randomly from valid candidates.
+        lowest Hamming Distance to Win for 'player'. Tie-break randomly.
         """
         valid_candidates = [i for i in candidate_indices if board.state[i] == EMPTY]
 
@@ -292,7 +317,7 @@ def save_policy_to_file(policy_actions, generation, fitness, player_mark):
     filename format: gen_{generation}_score_{fitness:.2f}_{player_mark}.py
     """
     # Create a safe filename with score formatted to 2 decimals
-    filename = f"gen_{generation}_score_{int(fitness)}_{player_mark}.py"
+    filename = f"gen_{generation}_score_{fitness:.2f}_{player_mark}.py"
 
     with open(filename, "w") as f:
         f.write("from game_engine import GameActions, Board, X_MARK, O_MARK\n\n")
@@ -386,7 +411,7 @@ def simulate_game_dynamics(
     Simulates game dynamics for a given policy and depth, saving transitions to a file.
 
     Args:
-        board (Board): Current board state.
+        board (Board or str or list): Current board state.
         policy_actions (list): List of action strings (e.g. ['WIN', 'CENTER']).
         depth (int): Max number of plies (turns) to simulate.
         player (str): Current player to move.
@@ -395,6 +420,10 @@ def simulate_game_dynamics(
         game_id (int): ID for the simulation set.
         _path (tuple): Tuple of indices for the current branch.
     """
+
+    # Ensure board is a Board object (Check for Board class, not just str)
+    if not isinstance(board, Board):
+        board = Board(board)
 
     # Stop conditions
     winner = HammingScorer.check_winner(board)

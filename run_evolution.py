@@ -1,7 +1,13 @@
 import unittest
 import random
 from gp_engine import GPEngine, PolicyGenome
-from game_engine import Board, GameActions, X_MARK, save_policy_to_file
+from game_engine import (
+    Board,
+    GameActions,
+    X_MARK,
+    save_policy_to_file,
+    simulate_game_dynamics,
+)
 
 # ==========================================
 # UNIT TESTS
@@ -82,14 +88,26 @@ def run_optimization(player, generations=20, minimax_max_depth=4):
     return best_policy
 
 
-if __name__ == "__main__":
-    # # 1. Run Unit Tests
-    # print("Running Tests...")
-    # suite = unittest.TestLoader().loadTestsFromTestCase(TestGameLogic)
-    # unittest.TextTestRunner(verbosity=1).run(suite)
-
-    # 2. Run Evolution for X (Depth 4)
+def run_moses(board, player, depth=1, game_id=1):
     best_x = run_optimization("X", generations=15, minimax_max_depth=4)
+    simulate_game_dynamics(board, best_x.actions, depth, player, game_id=game_id)
+    return True
 
-    # 3. Run Evolution for O (Depth 4)
-    best_o = run_optimization("O", generations=15, minimax_max_depth=4)
+
+def clean_file(filename):
+    with open(filename, "w") as f:
+        f.write("")
+
+
+# if __name__ == "__main__":
+#     # # 1. Run Unit Tests
+#     # print("Running Tests...")
+#     # suite = unittest.TestLoader().loadTestsFromTestCase(TestGameLogic)
+#     # unittest.TextTestRunner(verbosity=1).run(suite)
+#
+#     # 2. Run Evolution for X (Depth 4)
+#     best_x = run_optimization("X", generations=15, minimax_max_depth=4)
+#     simulate_game_dynamics("(Board (X E E E O E E E E))", best_x.actions, 3, X_MARK)
+#
+#     # 3. Run Evolution for O (Depth 4)
+#     # best_o = run_optimization("O", generations=15, minimax_max_depth=4)
