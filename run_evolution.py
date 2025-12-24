@@ -97,6 +97,7 @@ def run_moses(board, player, depth=1, game_id=1):
 def clean_file(filename):
     with open(filename, "w") as f:
         f.write("")
+    return True
 
 
 # if __name__ == "__main__":

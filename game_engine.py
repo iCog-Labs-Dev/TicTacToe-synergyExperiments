@@ -472,8 +472,8 @@ def simulate_game_dynamics(
 
             # Construct Unique ID: (GameID Turn PathTuple)
             new_path = _path + (i,)
-            path_str = " ".join(map(str, new_path))
-            id_str = f"({game_id} {_current_depth + 1} ({path_str}))"
+            path_str = "".join(map(str, new_path))
+            id_str = f"({game_id}{_current_depth + 1}{path_str})"
 
             # Requested Format: (Sentence ((Implication PRE POST) (stv ...)) ID)
             line = f"(Sentence ((Implication {prev_state_str} {next_state_str}) (stv 0.5 0.3)) {id_str})\n"

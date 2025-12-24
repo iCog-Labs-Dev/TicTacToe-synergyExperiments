@@ -289,5 +289,3 @@
 ;; !(PLN.Query (kb1) (Implication
 ;;                      (Board (Row X (Col X O)) (Rows (Row E (Col O E)) (Row E (Col E E))))
 ;;                      (Board (Row X (Col X O)) (Rows (Row E (Col O E)) (Row E (Col E #))))) 1000 500 1000)
-
-

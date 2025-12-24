@@ -4,6 +4,7 @@ from game_engine import GameActions, Board, X_MARK, O_MARK
 # Fitness: 6.0
 # Player: O
 
+
 def run_policy(board, player_mark):
     # Try BLOCK
     success, new_board = GameActions.play_block(board, player_mark)
