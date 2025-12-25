@@ -161,7 +161,7 @@
               ;; ($_ (println! (Found M: $m and N: $N)))
               ;; ($_ (println! ""))
             )
-            (stv (/ (+ $m 0.0001) $N) (/ $N (+ $N (K)))))
+            (stv (/ $m $N) (/ $N (+ $N (K)))))
           )
 
 (= (increment $state) (let $n (get-state $state) (let $_ (change-state! $state (+ $n 1)) (get-state $state))))
@@ -297,8 +297,11 @@
 ;;   - STV value being greater than 1
 ;;   - Results that should be found aren't being found. E.g. (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X)
 
-!(py-call (random.seed 1))
+!(py-call (random.seed 0))
 
-!(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X) 2 50 1)
+!(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X) 200 100 200)
 
-;; !(|- ((Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X)))) Game_Win_X) (stv 0.9 0.9)) ((Inheritance (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 0.9 0.9)))
+;; !(|- ((Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X)))) Game_Win_X) (stv 0.9 0.9)) ((Inheritance (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 0.9 0.9))) ;; WARN: Use as a testcase, it used to fail on seed 0. It used to return strength value of greater than 1. More specifically 1.62 something.
+
+;; !(STV Truth_Deduction Game_Lose_X)
+;; !(Truth_Deduction (STV Truth_Deduction Game_Lose_X) (STV Truth_Deduction (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col O E))))) (STV Truth_Deduction Game_Win_O) (stv 0.812 0.015359999999999997) (stv 0.9 0.9)) ;; WARN: Use as a testcase, it used to fail on seed 1

@@ -91,7 +91,7 @@
 ; borrowed from https://github.com/trueagi-io/hyperon-pln/blob/main/metta/pln/dependent-types/DeductionDTL.metta
 (: smallest-intersection-probability (-> Number Number Number))
 (= (smallest-intersection-probability $As $Bs)
-   (clamp (/ (- (+ $As $Bs) 1) $As) 0 1))
+   (clamp (/safe (- (+ $As $Bs) 1) $As) 0 1))
 
 (: largest-intersection-probability (-> Number Number Number))
 (= (largest-intersection-probability $As $Bs)
@@ -295,7 +295,6 @@
         (Truth_Deduction (STV $A)
                          (STV $B)
                          (STV $C) $T1 $T2)) (empty)))
-      
 
 ; Induction rule, see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/induction.scm
 (= (|- (($LinkType $C $A) $T1)
