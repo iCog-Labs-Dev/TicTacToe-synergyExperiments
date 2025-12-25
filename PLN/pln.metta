@@ -390,8 +390,11 @@
 ;;retrieve the best candidate (PQ functionality)
 (= (BestCandidate $evaluateCandidateFunction $bestCandidate $tuple)
    (if (== $tuple ())
-       $bestCandidate
-       (let* (($head (car-atom $tuple))
+       (trace! (Returning BestCandidate: $bestCandidate) $bestCandidate)
+       ;; $bestCandidate
+       (let* (
+               ($_ (Evaluation Function: $evaluateCandidateFunction))
+               ($head (car-atom $tuple))
               ($tail (cdr-atom $tuple)))
              (if (> ($evaluateCandidateFunction $head)
                     ($evaluateCandidateFunction $bestCandidate))
@@ -406,37 +409,56 @@
 (= (PriorityRankNeg (Sentence ($x (stv $f $c)) $Ev1)) (- 0.0 $c))
 (= (PriorityRankNeg ()) -99999.0)
 
+(= (ThompsonRank (Sentence ($x (stv $f $c)) $Ev1)) (py-call (random.betavariate $f $c)))
+(= (ThompsonRank ()) -999999999999999999.0)
+
+(= (ThompsonRankNeg (Sentence ($x $tv) $ev)) (- 0.0 (ThompsonRank (Sentence ($x $tv) $ev))))
+(= (ThompsonRankNeg ()) -9999999999999999999.0)
+
 ;;Return limited-sized version of $L (bounded PQ functionality)
 (= (LimitSize $L $size)
    (if (< (TupleCount $L) $size)
        $L
-       (let $lowestPriorityItem (BestCandidate PriorityRankNeg () $L)
+       (let $lowestPriorityItem (BestCandidate ThompsonRankNeg () $L)
             (LimitSize (Without $L $lowestPriorityItem) $size))))
 
+
 ;;Priority-queue based task ranking deriver with belief buffer
-(= (PLN.Derive $Tasks $Beliefs $steps $maxsteps $taskqueuesize $beliefqueuesize)
+(= (PLN.Derive $Tasks $Beliefs $steps $maxsteps $taskqueuesize $beliefqueuesize $term)
    (if (or (> $steps $maxsteps) (== $Tasks ()))
        ($Tasks $Beliefs)
-       (let (Sentence $x $Ev1) (BestCandidate PriorityRank () $Tasks)
-            (let $derivations
-                 (collapse (superpose ((let* (((Sentence $y $Ev2) (superpose $Beliefs))
-                                              ($stamp (InsertionSort (TupleConcat $Ev1 $Ev2) ())))
-                                             (if (StampDisjoint $Ev1 $Ev2)
-                                                 (case (superpose ((|- $x $y)
-                                                                   (|- $y $x)))
-                                                       ((($T $TV) (Sentence ($T $TV) $stamp))))
-                                                 (empty)))
-                                       (case (|- $x) ((($T3 $TV3) (Sentence ($T3 $TV3) $Ev1)))))))
-                 (let $temp (trace! (SELECTED $steps (Sentence $x $Ev1)) 42)
-                            (PLN.Derive (LimitSize (Without (Unique (TupleConcat $Tasks $derivations) ()) (Sentence $x $Ev1)) $taskqueuesize)
-                                        (LimitSize (Unique (TupleConcat $Beliefs $derivations) ()) $beliefqueuesize)
-                                        (+ $steps 1)
-                                        $maxsteps
-                                        $taskqueuesize
-                                        $beliefqueuesize))))))
+       (let $matches (filter-atom $Tasks (= (Sentence ($term $tv) $ev)))
+            (let (Sentence $x $Ev1) (BestCandidate ThompsonRank () (if (== $matches ()) $Tasks $matches))
+                  (let $derivations
+                      (collapse (superpose ((let* (((Sentence $y $Ev2) (superpose $Beliefs))
+                                                    ($stamp (InsertionSort (TupleConcat $Ev1 $Ev2) ())))
+                                                  (if (StampDisjoint $Ev1 $Ev2)
+                                                      (case (superpose ((|- $x $y)
+                                                                        (|- $y $x)))
+                                                            ((($T $TV) (Sentence ($T $TV) $stamp))))
+                                                      (empty)))
+                                            (case (|- $x) ((($T3 $TV3) (Sentence ($T3 $TV3) $Ev1)))))))
+                      (let $temp (trace! (SELECTED $steps (Sentence $x $Ev1)) 42)
+                        (let $terms (filter-atom $derivations (= (Sentence ($term $tv) $ev)))
+                                  (PLN.Derive
+                                      (Unique (TupleConcat (TupleConcat (LimitSize (Without (Unique (TupleConcat $Tasks $derivations) ()) (Sentence $x $Ev1)) (- $taskqueuesize (+ (length $matches) (length $terms)))) $matches) $terms) ())
+                                      (Unique (LimitSize (Unique (TupleConcat (TupleConcat $terms (Unique (TupleConcat $Beliefs $derivations) ())) $matches) ()) (- $beliefqueuesize (+ (length $matches) (length $terms)))) ())
+                                      (+ $steps 1)
+                                      $maxsteps
+                                      $taskqueuesize
+                                      $beliefqueuesize $term)))
+                                  )))))
+                            ; (let $terms (collapse (let (Sentence ($term $tv) $ev) (superpose $derivations) (Sentence ($term $tv) $ev)))
+                            ;                  (PLN.Derive
+                            ;                     (Unique (TupleConcat $terms (LimitSize (Without (Unique (TupleConcat $Tasks $derivations) ()) (Sentence $x $Ev1)) $taskqueuesize)))
+                            ;                     (Unique (TupleConcat $terms (LimitSize (Unique (TupleConcat $Beliefs $derivations) ()) $beliefqueuesize)))
+                            ;                     (+ $steps 1)
+                            ;                     $maxsteps
+                            ;                     $taskqueuesize
+                            ;                     $beliefqueuesize $term)))))))
 
-(= (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize)
-   (PLN.Derive $Tasks $Beliefs 1 $maxsteps $taskqueuesize $beliefqueuesize))
+(= (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize $term)
+   (PLN.Derive $Tasks $Beliefs 1 $maxsteps $taskqueuesize $beliefqueuesize $term))
 
 (= (PLN.Derive $Tasks $Beliefs $maxsteps)
    (PLN.Derive $Tasks $Beliefs $maxsteps (PLN.Config.TaskQueueSize) (PLN.Config.BeliefQueueSize)))
@@ -462,7 +484,7 @@
    ;;
    (let*
    (
-     (($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize))
+     (($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize $term))
      ($candidates (collapse (case (superpose $BeliefsRet)
                                      (((Sentence ($Term $TV) $Ev) (case (= $Term $term)
                                                                        ((True ($Term ($TV $Ev))))))))))
