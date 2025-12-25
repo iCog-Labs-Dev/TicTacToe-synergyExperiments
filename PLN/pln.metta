@@ -140,7 +140,7 @@
                 (+ (* $PQs $QRs) (/safe (* (- 1 $PQs) (- $Rs (* $Qs $QRs))) (- 1 $Qs))))
             (min $Pc (min $Qc (min $Rc (min $PQc $QRc)))))
        ;; Preconditions are not met
-       (stv 1 0)))
+       (stv 1 0.3)))
 
 ; Induction formula: PLN book "Appendix A: Comparison of PLN Rules with NARS Rules", page 307
 (= (Truth_Induction (stv $sA $cA)
@@ -390,14 +390,13 @@
 ;;retrieve the best candidate (PQ functionality)
 (= (BestCandidate $evaluateCandidateFunction $bestCandidate $tuple)
    (if (== $tuple ())
-       (trace! (Returning BestCandidate: $bestCandidate) $bestCandidate)
-       ;; $bestCandidate
+       $bestCandidate
        (let* (
-               ($_ (Evaluation Function: $evaluateCandidateFunction))
                ($head (car-atom $tuple))
-              ($tail (cdr-atom $tuple)))
-             (if (> ($evaluateCandidateFunction $head)
-                    ($evaluateCandidateFunction $bestCandidate))
+               ($tail (cdr-atom $tuple))
+              )
+             (if (> (eval ($evaluateCandidateFunction $head))
+                    (eval ($evaluateCandidateFunction $bestCandidate)))
                  (BestCandidate $evaluateCandidateFunction $head $tail)
                  (BestCandidate $evaluateCandidateFunction $bestCandidate $tail)))))
 
@@ -427,27 +426,43 @@
 (= (PLN.Derive $Tasks $Beliefs $steps $maxsteps $taskqueuesize $beliefqueuesize $term)
    (if (or (> $steps $maxsteps) (== $Tasks ()))
        ($Tasks $Beliefs)
-       (let $matches (filter-atom $Tasks (= (Sentence ($term $tv) $ev)))
-            (let (Sentence $x $Ev1) (BestCandidate ThompsonRank () (if (== $matches ()) $Tasks $matches))
-                  (let $derivations
-                      (collapse (superpose ((let* (((Sentence $y $Ev2) (superpose $Beliefs))
+       (let*
+          (
+            ($matches (filter-atom $Tasks (= (Sentence ($term $tv) $ev))))
+            ((Sentence $x $Ev1) (BestCandidate ThompsonRank () (if (== $matches ()) $Tasks $matches)))
+            ($derivations (collapse (superpose ((let* (((Sentence $y $Ev2) (superpose $Beliefs))
                                                     ($stamp (InsertionSort (TupleConcat $Ev1 $Ev2) ())))
                                                   (if (StampDisjoint $Ev1 $Ev2)
                                                       (case (superpose ((|- $x $y)
                                                                         (|- $y $x)))
                                                             ((($T $TV) (Sentence ($T $TV) $stamp))))
                                                       (empty)))
-                                            (case (|- $x) ((($T3 $TV3) (Sentence ($T3 $TV3) $Ev1)))))))
-                      (let $temp (trace! (SELECTED $steps (Sentence $x $Ev1)) 42)
-                        (let $terms (filter-atom $derivations (= (Sentence ($term $tv) $ev)))
-                                  (PLN.Derive
-                                      (Unique (TupleConcat (TupleConcat (LimitSize (Without (Unique (TupleConcat $Tasks $derivations) ()) (Sentence $x $Ev1)) (- $taskqueuesize (+ (length $matches) (length $terms)))) $matches) $terms) ())
-                                      (Unique (LimitSize (Unique (TupleConcat (TupleConcat $terms (Unique (TupleConcat $Beliefs $derivations) ())) $matches) ()) (- $beliefqueuesize (+ (length $matches) (length $terms)))) ())
-                                      (+ $steps 1)
-                                      $maxsteps
-                                      $taskqueuesize
-                                      $beliefqueuesize $term)))
-                                  )))))
+                                            (case (|- $x) ((($T3 $TV3) (Sentence ($T3 $TV3) $Ev1))))))))
+
+            ($_ (println! (SELECTED $steps (Sentence $x $Ev1))))
+            ($terms (filter-atom $derivations (= (Sentence ($term $tv) $ev))))
+            ; ($_ (println! (Terms: $terms)))
+            ; ($_ (println! ""))
+            ; ($_ (println! (Tasks: $Tasks)))
+            ; ($_ (println! ""))
+            ; ($_ (println! (Beliefs: $Beliefs)))
+            ; ($_ (println! ""))
+            ; ($_ (println! (Derivations: $derivations)))
+            ; ($_ (println! ""))
+            ; ($_ (println! (Matches: $matches)))
+            ; ($_ (println! ""))
+            ; ($_ (println! (Matches: $matches)))
+            ; ($_ (println! ""))
+            ; ($_ (println! (Sentence:  (Sentence $x $Ev1))))
+            ; ($_ (println! ""))
+          )
+          (PLN.Derive
+                            (Unique (TupleConcat (TupleConcat (LimitSize (Without (Unique (TupleConcat $Tasks $derivations) ()) (Sentence $x $Ev1)) (- $taskqueuesize (+ (length $matches) (length $terms)))) $matches) $terms) ())
+                            (Unique (LimitSize (Unique (TupleConcat (TupleConcat $terms (Unique (TupleConcat $Beliefs $derivations) ())) $matches) ()) (- $beliefqueuesize (+ (length $matches) (length $terms)))) ())
+                            (+ $steps 1)
+                            $maxsteps
+                            $taskqueuesize
+                            $beliefqueuesize $term))))
                             ; (let $terms (collapse (let (Sentence ($term $tv) $ev) (superpose $derivations) (Sentence ($term $tv) $ev)))
                             ;                  (PLN.Derive
                             ;                     (Unique (TupleConcat $terms (LimitSize (Without (Unique (TupleConcat $Tasks $derivations) ()) (Sentence $x $Ev1)) $taskqueuesize)))
