@@ -1,3 +1,5 @@
+(= (K) 50)
+
 (= (clamp $v $min $max)
    (min $max (max $v $min)))
 
@@ -140,7 +142,7 @@
                 (+ (* $PQs $QRs) (/safe (* (- 1 $PQs) (- $Rs (* $Qs $QRs))) (- 1 $Qs))))
             (min $Pc (min $Qc (min $Rc (min $PQc $QRc)))))
        ;; Preconditions are not met
-       (stv 1 0.3)))
+       (stv 1 0)))
 
 ; Induction formula: PLN book "Appendix A: Comparison of PLN Rules with NARS Rules", page 307
 (= (Truth_Induction (stv $sA $cA)
@@ -417,11 +419,24 @@
 (= (PriorityRankNeg (Sentence ($x (stv $f $c)) $Ev1)) (- 0.0 $c))
 (= (PriorityRankNeg ()) -99999.0)
 
-(= (ThompsonRank (Sentence ($x (stv $f $c)) $Ev1)) (py-call (random.betavariate $f $c)))
-(= (ThompsonRank ()) -999999999999999999.0)
+;; Helper to safe-guard against div by zero or negative params
+(= (beta-param $val $n)
+   (let $count (* $val $n)
+        (if (< $count 1.0) 1.0 $count)))
+
+(= (ThompsonRank (Sentence ($x (stv $f $c)) $Ev1))
+   (let* (
+          ($k (K)) ;; Estimate effective evidence count N based on confidence
+          ($N (if (>= $c 1.0) 100.0 (/ (* $c $k) (- 1.0 $c))))
+          
+          ($alpha (beta-param $f $N)) ;; Calculate Alpha (positive) and Beta (negative)
+          ($beta  (beta-param (- 1.0 $f) $N))) ;; Call sampler with corrected counts
+         (py-call (random.betavariate $alpha $beta))))
+
+(= (ThompsonRank ()) (py-call (float "-inf")))
 
 (= (ThompsonRankNeg (Sentence ($x $tv) $ev)) (- 0.0 (ThompsonRank (Sentence ($x $tv) $ev))))
-(= (ThompsonRankNeg ()) -9999999999999999999.0)
+(= (ThompsonRankNeg ()) (py-call (float "-inf")))
 
 ;;Return limited-sized version of $L (bounded PQ functionality)
 (= (LimitSize $L $size)
