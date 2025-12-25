@@ -428,9 +428,9 @@
    (let* (
           ($k (K)) ;; Estimate effective evidence count N based on confidence
           ($N (if (>= $c 1.0) 100.0 (/ (* $c $k) (- 1.0 $c))))
-          
+
           ($alpha (beta-param $f $N)) ;; Calculate Alpha (positive) and Beta (negative)
-          ($beta  (beta-param (- 1.0 $f) $N))) ;; Call sampler with corrected counts
+          ($beta  (beta-param (- 1.0 $f) $N)))
          (py-call (random.betavariate $alpha $beta))))
 
 (= (ThompsonRank ()) (py-call (float "-inf")))

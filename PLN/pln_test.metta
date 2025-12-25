@@ -5,9 +5,7 @@
 !(bind! &count (new-state 39))
 
 
-(= (K) 50)
-
-!(let $perception
+!((collapse (let $perception
       (superpose
         (
           (Implication (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))))
@@ -60,29 +58,29 @@
 
         ) ;; Manually inputed space content. It should be updated to be persistent.
       )
-      (add-atom &perception $perception))
+      (add-atom &perception $perception)))
 
 
 
-!(let $belief
+(collapse (let $belief
       (superpose
         (
-           (Sentence ((Implication (Implication $1 $2) (Implication (Inheritance $2 Game_Win_X) (Inheritance $1 Game_Win_X))) (stv 1.0 1.0)) (0))
-           (Sentence ((Implication (Implication $1 $2) (Implication (Inheritance $2 Game_Win_O) (Inheritance $1 Game_Win_O))) (stv 1.0 1.0)) (1))
-           (Sentence ((Implication (Inheritance $1 Game_Win_X) (Inheritance $1 Game_Lose_O)) (stv 1.0 1.0)) (2))
-           (Sentence ((Implication (Inheritance $1 Game_Win_O) (Inheritance $1 Game_Lose_X)) (stv 1.0 1.0)) (3))
-           (Sentence ((Equivalence (Board (Row $TL (Col $TC $TR)) (Rows (Row $ML (Col $MC $MR)) (Row $BL (Col $BC $BR)))) (Board (Row $TR (Col $TC $TL)) (Rows (Row $MR (Col $MC $ML)) (Row $BR (Col $BC $BL))))) (stv 1.0 1.0)) (4))
-           (Sentence ((Equivalence (Board $TopRow (Rows $MidRow $BotRow)) (Board $BotRow (Rows $MidRow $TopRow))) (stv 1.0 1.0)) (5))
-           ;; (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $20 (Col $10 $00)) (Rows (Row $21 (Col $11 $01)) (Row $22 (Col $12 $02))))) (stv 1.0 1.0)) (72))
-           ;; (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $22 (Col $12 $02)) (Rows (Row $21 (Col $11 $01)) (Row $20 (Col $10 $00))))) (stv 1.0 1.0)) (73))
-           ;; (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $00 (Col $10 $20)) (Rows (Row $01 (Col $11 $21)) (Row $02 (Col $12 $22))))) (stv 1.0 1.0)) (74))
+           (Sentence ((Implication (Implication (Board $1 $1s) (Board $2 $2s)) (Implication (Inheritance (Board $2 $2s) Game_Win_X) (Inheritance (Board $1 $1s) Game_Win_X))) (stv 0.9 0.9)) (0))
+           (Sentence ((Implication (Implication (Board $1 $1s) (Board $2 $2s)) (Implication (Inheritance (Board $2 $2s) Game_Win_O) (Inheritance (Board $1 $1s) Game_Win_O))) (stv 0.9 0.9)) (1))
+           (Sentence ((Implication (Inheritance $1 Game_Win_X) (Inheritance $1 Game_Lose_O)) (stv 0.9 0.9)) (2))
+           (Sentence ((Implication (Inheritance $1 Game_Win_O) (Inheritance $1 Game_Lose_X)) (stv 0.9 0.9)) (3))
+           (Sentence ((Equivalence (Board (Row $TL (Col $TC $TR)) (Rows (Row $ML (Col $MC $MR)) (Row $BL (Col $BC $BR)))) (Board (Row $TR (Col $TC $TL)) (Rows (Row $MR (Col $MC $ML)) (Row $BR (Col $BC $BL))))) (stv 0.9 0.9)) (4))
+           (Sentence ((Equivalence (Board $TopRow (Rows $MidRow $BotRow)) (Board $BotRow (Rows $MidRow $TopRow))) (stv 0.9 0.9)) (5))
+           ;; (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $20 (Col $10 $00)) (Rows (Row $21 (Col $11 $01)) (Row $22 (Col $12 $02))))) (stv 0.9 0.9)) (72))
+           ;; (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $22 (Col $12 $02)) (Rows (Row $21 (Col $11 $01)) (Row $20 (Col $10 $00))))) (stv 0.9 0.9)) (73))
+           ;; (Sentence ((Equivalence (Board (Row $00 (Col $01 $02)) (Rows (Row $10 (Col $11 $12)) (Row $20 (Col $21 $22)))) (Board (Row $00 (Col $10 $20)) (Rows (Row $01 (Col $11 $21)) (Row $02 (Col $12 $22))))) (stv 0.9 0.9)) (74))
 
            (Sentence ((Implication (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E))))) (stv 0.08334166666666666 0.1935483870967742)) (6))
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row O (Col E E))))) (stv 0.08334166666666666 0.1935483870967742)) (7))
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row O (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col E E))))) (stv 0.08334166666666666 0.1935483870967742)) (8))
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O E))))) (stv 0.08334166666666666 0.1935483870967742)) (9))
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O E)))) (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X))))) (stv 0.08334166666666666 0.1935483870967742)) (10))
-           (Sentence ((Inheritance (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 1.0 1.0)) (11))
+           (Sentence ((Inheritance (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 0.9 0.9)) (11))
            (Sentence ((Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (stv 0.08334166666666666 0.1935483870967742)) (12))
            (Sentence ((Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (stv 0.08334166666666666 0.1935483870967742)) (13))
            (Sentence ((Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row O (Col E E)))) (stv 0.08334166666666666 0.1935483870967742)) (14))
@@ -95,7 +93,6 @@
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row O (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col E E))))) (stv 0.03846538461538462 0.34210526315789475)) (20))
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O E))))) (stv 0.03846538461538462 0.34210526315789475)) (21))
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O E)))) (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X))))) (stv 0.03846538461538462 0.34210526315789475)) (22))
-           (Sentence ((Inheritance (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 1.0 1.0)) (23))
            (Sentence ((Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (stv 0.07692692307692309 0.34210526315789475)) (24))
            (Sentence ((Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (stv 0.07692692307692309 0.34210526315789475)) (25))
            (Sentence ((Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row O (Col E E)))) (stv 0.03846538461538462 0.34210526315789475)) (26))
@@ -108,7 +105,7 @@
            (Sentence ((Implication (Board (Row X (Col E X)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (Board (Row X (Col O X)) (Rows (Row E (Col O E)) (Row E (Col E E))))) (stv 0.03846538461538462 0.34210526315789475)) (32))
            (Sentence ((Implication (Board (Row X (Col O X)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col E E))))) (stv 0.03846538461538462 0.34210526315789475)) (33))
            (Sentence ((Implication (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col E E)))) (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col O E))))) (stv 0.03846538461538462 0.34210526315789475)) (34))
-           (Sentence ((Inheritance (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col O E)))) Game_Win_O) (stv 1.0 1.0)) (34))
+           (Sentence ((Inheritance (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col O E)))) Game_Win_O) (stv 0.9 0.9)) (34))
            (Sentence ((Board (Row X (Col E E)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (stv 0.03846538461538462 0.34210526315789475)) (35))
            (Sentence ((Board (Row X (Col E X)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (stv 0.03846538461538462 0.34210526315789475)) (36))
            (Sentence ((Board (Row X (Col O X)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (stv 0.03846538461538462 0.34210526315789475)) (37))
@@ -120,7 +117,7 @@
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row O (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col E E))))) (stv 0.026318421052631578 0.4318181818181818)) (42))
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O E))))) (stv 0.026318421052631578 0.4318181818181818)) (43))
            (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O E)))) (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X))))) (stv 0.026318421052631578 0.4318181818181818)) (44))
-           (Sentence ((Inheritance (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 1.0 1.0)) (45))
+           (Sentence ((Implication (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 0.9 0.9)) (45))
            (Sentence ((Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (stv 0.07895 0.4318181818181818)) (46))
            (Sentence ((Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (stv 0.07895 0.4318181818181818)) (47))
            (Sentence ((Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row O (Col E E)))) (stv 0.026318421052631578 0.4318181818181818)) (48))
@@ -133,7 +130,7 @@
            (Sentence ((Implication (Board (Row X (Col E X)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (Board (Row X (Col O X)) (Rows (Row E (Col O E)) (Row E (Col E E))))) (stv 0.026318421052631578 0.4318181818181818)) (54))
            (Sentence ((Implication (Board (Row X (Col O X)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col E E))))) (stv 0.026318421052631578 0.4318181818181818)) (55))
            (Sentence ((Implication (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col E E)))) (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col O E))))) (stv 0.026318421052631578 0.4318181818181818)) (56))
-           (Sentence ((Inheritance (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col O E)))) Game_Win_O) (stv 1.0 1.0)) (57))
+           (Sentence ((Inheritance (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col O E)))) Game_Win_O) (stv 0.9 0.9)) (57))
            (Sentence ((Board (Row X (Col E E)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (stv 0.026318421052631578 0.4318181818181818)) (58))
            (Sentence ((Board (Row X (Col E X)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (stv 0.026318421052631578 0.4318181818181818)) (59))
            (Sentence ((Board (Row X (Col O X)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (stv 0.026318421052631578 0.4318181818181818)) (60))
@@ -144,7 +141,7 @@
            (Sentence ((Implication (Board (Row X (Col E O)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (Board (Row X (Col E O)) (Rows (Row E (Col X E)) (Row E (Col E E))))) (stv 0.026318421052631578 0.4318181818181818)) (64))
            (Sentence ((Implication (Board (Row X (Col E O)) (Rows (Row E (Col X E)) (Row E (Col E E)))) (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E))))) (stv 0.026318421052631578 0.4318181818181818)) (65))
            (Sentence ((Implication (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X))))) (stv 0.026318421052631578 0.4318181818181818)) (66))
-           (Sentence ((Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X)))) Game_Win_X) (stv 1.0 1.0)) (67))
+           (Sentence ((Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X)))) Game_Win_X) (stv 0.9 0.9)) (67))
            (Sentence ((Board (Row X (Col E O)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (stv 0.026318421052631578 0.4318181818181818)) (68))
            (Sentence ((Board (Row X (Col E O)) (Rows (Row E (Col X E)) (Row E (Col E E)))) (stv 0.026318421052631578 0.4318181818181818)) (69))
            (Sentence ((Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) (stv 0.026318421052631578 0.4318181818181818)) (70))
@@ -153,13 +150,16 @@
            ;; Moked moves
         ) ;; Manually inputed space content. It should be updated to be persistent.
       )
-      (add-atom &belief $belief))
+      (add-atom &belief $belief))))
 
 (= (STV $fact)
           (let*
             (
+              ;; ($_ (println! (Calling STV for $fact)))
               ($m (foldl-atom (if (= $fact ($link $a $b)) (collapse (match &perception $fact 1)) (collapse (match &perception ($link $a $fact) 1))) 0 +)) ;; Positive count
               ($N (foldl-atom (collapse (match &perception $x 1)) 0 +)) ;; Total count
+              ;; ($_ (println! (Found M: $m and N: $N)))
+              ;; ($_ (println! ""))
             )
             (stv (/ (+ $m 0.0001) $N) (/ $N (+ $N (K)))))
           )
@@ -213,6 +213,10 @@
 ;       (println! (match &space (Sentence ($query $stv) $proof) (Sentence ($query $stv) $proof)))
 ; )
 
+
+;; !(= (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X)))) (Board (Row X (Col $a O)) (Rows (Row $b (Col X O)) (Row $c (Col $d $e)))))
+;; !(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Board (Row O (Col E X)) (Rows (Row O (Col X E)) (Row E (Col E E))))) Game_Win_X) 500 200 500)
+
 ;; Winning move
 ;; !(println! (First move score)) ;; 1 2 4
 ;; !(let*
@@ -225,12 +229,12 @@
 ;;    $bestCandidate)
 ;; !(println! (First move score)) ;; 1 2 4
 ;; !(println! "Hello")
-!(PLN.Query (collapse (get-atoms &belief)) (Implication (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (Board (Row X (Col $b $c)) (Rows (Row $d (Col $a $e)) (Row $f (Col $g $h))))) 2000 500 2000)
+;; !(PLN.Query (collapse (get-atoms &belief)) (Implication (Board (Row X (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (Board (Row X (Col $b $c)) (Rows (Row $d (Col $a $e)) (Row $f (Col $g $h))))) 2000 500 2000)
 
 ;; !(PLN.Query (collapse (get-atoms &belief)) (Implication (Board (Row X (Col E E)) (Rows (Row E (Col O E)) (Row E (Col E E)))) (Board (Row X (Col E E)) (Rows (Row E (Col O E)) (Row E (Col E E))))) 200 100 200)
 
 ; !(println! (Second move score))
-!(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row E (Col X E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) Game_Win_X) 200 100 200)
+;; !(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row E (Col X E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) Game_Win_X) 200 100 200)
 
 ; !(println! (Third move score))
 ; !(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row E (Col E X)) (Rows (Row E (Col E E)) (Row E (Col E E)))) Game_Win_X) 200 100 200)
@@ -289,3 +293,12 @@
 ;; !(PLN.Query (kb1) (Implication
 ;;                      (Board (Row X (Col X O)) (Rows (Row E (Col O E)) (Row E (Col E E))))
 ;;                      (Board (Row X (Col X O)) (Rows (Row E (Col O E)) (Row E (Col E #))))) 1000 500 1000)
+;; TODO:
+;;   - STV value being greater than 1
+;;   - Results that should be found aren't being found. E.g. (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X)
+
+!(py-call (random.seed 1))
+
+!(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X) 2 50 1)
+
+;; !(|- ((Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X)))) Game_Win_X) (stv 0.9 0.9)) ((Inheritance (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 0.9 0.9)))
