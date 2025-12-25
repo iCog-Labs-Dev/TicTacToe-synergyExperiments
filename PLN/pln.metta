@@ -148,9 +148,8 @@
                     (stv $sC $cC)
                     (stv $sBA $cBA)
                     (stv $sBC $cBC))
-   (stv (+ (/safe (* (* $sBA $sBC) $sB) $sA)
-           (* (- 1 (/safe (* $sBA $sB) $sA))
-              (/safe (- $sC (* $sB $sBC)) (- 1 $sB))))
+   (stv (+ (/safe (* (* $sBA $sBC) $sC) $sA)
+           (* (- 1 (/safe (* $sBA $sC) $sA)) (/safe (- $sB (* $sC $sBC)) (- 1 $sC))))
         (Truth_w2c (min $cBA $cBC)))) ;confidence TODO check
 
 ; Abduction formula: PLN book "Appendix A: Comparison of PLN Rules with NARS Rules", page 307
@@ -159,11 +158,9 @@
                     (stv $sC $cC)
                     (stv $sAB $cAB)
                     (stv $sCB $cCB))
-   (stv (+ (/safe (* (* $sAB $sCB) $sC)
-                  $sB)
-           (/safe (* $sC (* (- 1 $sAB) (- 1 $sCB)))
-                  (- 1 $sB)))
-        (Truth_w2c (min $cAB $cCB)))) ;confidence TODO check
+   (stv (+ (/safe (* (* $sAB $sCB) $sB) $sC)
+                   (/safe (* $sB (* (- 1 $sAB) (- 1 $sCB))) (- 1 $sC)))
+                (Truth_w2c (min $cAB $cCB))))
 
 ;Modus Ponens: PLN book "5.7.1 Modus Ponens", page 111:
 (= (Truth_ModusPonens (stv $f1 $c1) (stv $f2 $c2)) 
@@ -172,14 +169,18 @@
 
 ; SymmetricModusPonens rule   see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/symmetric-modus-ponens.scm
 (= (Truth_SymmetricModusPonens (stv $sA $cA) (stv $sAB $cAB))
-   (let* (($snotAB 0.2)
+   (let* (
+          ($_ (println! (Calling Truth_SymmetricModusPonens)))
+          ($snotAB 0.2)
           ($cnotAB 1.0))
          (stv (+ (* $sA $sAB) (* (* $snotAB (negate $sA)) (+ 1.0 $sAB)))
               (min (min $cAB $cnotAB) $cA))))
 
 ;Revision: PLN Book "5.10.2 A Heuristic Revision Rule for Simple Truth-values", page 116:
 (= (Truth_Revision (stv $f1 $c1) (stv $f2 $c2))
-   (let* (($w1 (Truth_c2w $c1))
+   (let* (
+          ($_ (println! (Calling Truth_Revision)))
+          ($w1 (Truth_c2w $c1))
           ($w2 (Truth_c2w $c2))
           ($w (+ $w1 $w2))
           ($f (/safe (+ (* $w1 $f1) (* $w2 $f2)) $w))
@@ -199,7 +200,9 @@
 
 ; see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/equivalence-to-implication.scm
 (= (Truth_equivalenceToImplication (stv $As $Ac) (stv $Bs $Bc) (stv $ABs $ABc))
-    (let* (($ConclS (if (< 0.99 (* $ABs $ABc)) ; Hack to work around the lack of distributional
+    (let* (
+           ($_ (println! (Calling Truth_equivalenceToImplication)))
+           ($ConclS (if (< 0.99 (* $ABs $ABc)) ; Hack to work around the lack of distributional
                                                ; TV. If ABs is high enough, we just set $ConclS as $ABs
                         $ABs
                         ;; Formula based on PLN book formula for sim2inh
@@ -208,7 +211,9 @@
 
 ; see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/formulas.scm#L160-L173
 (= (TransitiveSimilarityStrength $sA $sB $sC $sAB $sBC)
-   (let* (($T1 (/ (* (+ 1.0 (/ $sB $sA)) $sAB) (+ 1.0 $sAB)))
+   (let* (
+          ($_ (println! (Calling TransitiveSimilarityStrength)))
+          ($T1 (/ (* (+ 1.0 (/ $sB $sA)) $sAB) (+ 1.0 $sAB)))
           ($T2 (/ (* (+ 1.0 (/ $sC $sB)) $sBC) (+ 1.0 $sBC)))
           ($T3 (/ (* (+ 1.0 (/ $sB $sC)) $sBC) (+ 1.0 $sBC)))
           ($T4 (/ (* (+ 1.0 (/ $sA $sB)) $sAB) (+ 1.0 $sAB))))
@@ -221,7 +226,9 @@
                                (stv $Cs $Cc)
                                (stv $ABs $ABc)
                                (stv $BCs $BCc))
-   (let* (($ConclS (TransitiveSimilarityStrength $As $Bs $Cs $ABs $BCs))
+   (let* (
+          ($_ (println! (Calling Truth_transitiveSimilarity)))
+          ($ConclS (TransitiveSimilarityStrength $As $Bs $Cs $ABs $BCs))
           ($ConclC (min $ABc $BCc)))
          (stv $ConclS $ConclC)))
 
@@ -244,7 +251,9 @@
                                 (stv $Cs $Cc)
                                 (stv $ABs $ABc)
                                 (stv $ACs $ACc))
-   (let* (($ConclS (simpleDeductionStrength $Bs $As $Cs $ABs $ACs))
+   (let* (
+          ($_ (println! (Calling Truth_evaluationImplication)))
+          ($ConclS (simpleDeductionStrength $Bs $As $Cs $ABs $ACs))
           ($ConclC (* (* 0.9 0.9)
                       (min5 $Bc $Ac $Cc $ACc (* 0.9 $ABc)))))
          (stv $ConclS $ConclC)))
@@ -430,31 +439,19 @@
           (
             ($matches (filter-atom $Tasks (= (Sentence ($term $tv) $ev))))
             ((Sentence $x $Ev1) (BestCandidate ThompsonRank () (if (== $matches ()) $Tasks $matches)))
-            ($derivations (collapse (superpose ((let* (((Sentence $y $Ev2) (superpose $Beliefs))
-                                                    ($stamp (InsertionSort (TupleConcat $Ev1 $Ev2) ())))
-                                                  (if (StampDisjoint $Ev1 $Ev2)
-                                                      (case (superpose ((|- $x $y)
-                                                                        (|- $y $x)))
-                                                            ((($T $TV) (Sentence ($T $TV) $stamp))))
-                                                      (empty)))
+            ($derivations (collapse (superpose ((let* (
+                                                        ((Sentence $y $Ev2) (superpose $Beliefs))
+                                                        ($stamp (InsertionSort (TupleConcat $Ev1 $Ev2) ()))
+                                                      )
+                                                      (if (StampDisjoint $Ev1 $Ev2)
+                                                          (case (superpose ((|- $x $y)
+                                                                            (|- $y $x)))
+                                                                ((($T $TV) (Sentence ($T $TV) $stamp))))
+                                                          (empty)))
                                             (case (|- $x) ((($T3 $TV3) (Sentence ($T3 $TV3) $Ev1))))))))
 
             ($_ (println! (SELECTED $steps (Sentence $x $Ev1))))
             ($terms (filter-atom $derivations (= (Sentence ($term $tv) $ev))))
-            ; ($_ (println! (Terms: $terms)))
-            ; ($_ (println! ""))
-            ; ($_ (println! (Tasks: $Tasks)))
-            ; ($_ (println! ""))
-            ; ($_ (println! (Beliefs: $Beliefs)))
-            ; ($_ (println! ""))
-            ; ($_ (println! (Derivations: $derivations)))
-            ; ($_ (println! ""))
-            ; ($_ (println! (Matches: $matches)))
-            ; ($_ (println! ""))
-            ; ($_ (println! (Matches: $matches)))
-            ; ($_ (println! ""))
-            ; ($_ (println! (Sentence:  (Sentence $x $Ev1))))
-            ; ($_ (println! ""))
           )
           (PLN.Derive
                             (Unique (TupleConcat (TupleConcat (LimitSize (Without (Unique (TupleConcat $Tasks $derivations) ()) (Sentence $x $Ev1)) (- $taskqueuesize (+ (length $matches) (length $terms)))) $matches) $terms) ())
