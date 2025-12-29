@@ -528,13 +528,13 @@
      (($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize $term))
      ($candidates (collapse (case (superpose $BeliefsRet)
                                      (((Sentence ($Term $TV) $Ev) (case (= $Term $term)
-                                                                       ((True ($Term ($TV $Ev))))))))))
+                                                                       ((True (Sentence ($Term $TV) $Ev)))))))))
      ($stvs (collapse (let ($term $stv) (superpose $candidates) $stv)))
      ($bestStv (BestCandidate ConfidenceRank () $stvs))
      ($bestCandidate (collapse (let ($term $bestStv) (superpose $candidates) ($term $bestStv))))
    )
    $bestCandidate
-   ;; $candidates
+   ;; (superpose $candidates)
    )
    ;; (BestCandidate ConfidenceRank () (collapse (let ($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize)
    ;;                                                 (case (superpose $BeliefsRet)

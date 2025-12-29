@@ -299,9 +299,9 @@
 
 ;; !(py-call (random.seed 344))
 
-;; TODO:
-;;    - Solution that must be found are not being found when using Thompson Sampling. E.g. (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X)
-!(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X) 25 2 125) ;; Works with PriorityRank
+;; !(PLN.Query (collapse (get-atoms &belief)) (Implication (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X))))) 300 500 300) ;; Works with PriorityRank
+;; !(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X)))) Game_Win_X) 25 2 125) ;; Works with PriorityRank
+;; !(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X) 300 500 300) ;; Works with PriorityRank
 
 ;; !(|- ((Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X)))) Game_Win_X) (stv 0.9 0.9)) ((Inheritance (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 0.9 0.9))) ;; WARN: Use as a testcase, it used to fail on seed 0. It used to return strength value of greater than 1. More specifically 1.62 something.
 
