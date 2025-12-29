@@ -297,11 +297,45 @@
 ;;   - STV value being greater than 1
 ;;   - Results that should be found aren't being found. E.g. (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X)
 
-!(py-call (random.seed 0))
+;; !(py-call (random.seed 344))
 
-!(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X) 200 100 200)
+;; TODO:
+;;    - Solution that must be found are not being found when using Thompson Sampling. E.g. (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X)
+!(PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X) 25 2 125) ;; Works with PriorityRank
 
 ;; !(|- ((Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E X)))) Game_Win_X) (stv 0.9 0.9)) ((Inheritance (Board (Row X (Col E E)) (Rows (Row E (Col X E)) (Row O (Col O X)))) Game_Win_X) (stv 0.9 0.9))) ;; WARN: Use as a testcase, it used to fail on seed 0. It used to return strength value of greater than 1. More specifically 1.62 something.
+
+(= (findSeed $p $f $n)
+   (let*
+      (
+        ($_ (println! (Trying Seed: $n)))
+        ($_ (println! ""))
+        ($_ (py-call (random.seed $n)))
+        ;; ($_ (py-call (time.sleep 1)))
+        ($result (eval $f) )
+        ($_ (println! ""))
+      )
+      (if ($p $result)
+          $n
+          (findSeed $p $f (+ $n 1)))))
+
+;; !(findSeed (!= ()) (quote (PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row X (Col E O)) (Rows (Row E (Col X O)) (Row E (Col E E)))) Game_Win_X) 25 2 125)) 100)
+;; !(findSeed 146) ;; WARN: This is a failing seed. It generates an STV value of greater than 1.
+
+
+;; !(BestCandidate ThompsonRank () (collapse (get-atoms &belief)))
+;; !(BestCandidate PriorityRank () (collapse (get-atoms &belief)))
+;; !(BestCandidate BayesianRank () (collapse (get-atoms &belief)))
+
+(= (until $p $f) (let $res (eval $f)
+                      (if ($p $res)
+                          $res
+                          (until $p $f))))
+
+;; !(until (= (Sentence ((Implication (Implication (Board $_425910 $_425916) (Board $_425934 $_425940)) (Implication (Inheritance (Board $_425934 $_425940) Game_Win_X) (Inheritance (Board $_425910 $_425916) Game_Win_X))) (stv 0.9 0.9)) (0))) (quote (BestCandidate ThompsonRank () (collapse (get-atoms &belief)))))
+
+;; !(findSeed (= (Sentence ((Implication (Implication (Board $_425910 $_425916) (Board $_425934 $_425940)) (Implication (Inheritance (Board $_425934 $_425940) Game_Win_X) (Inheritance (Board $_425910 $_425916) Game_Win_X))) (stv 0.9 0.9)) (0))) (quote (BestCandidate ThompsonRank () (collapse (get-atoms &belief)))) 0)
+
 
 ;; !(STV Truth_Deduction Game_Lose_X)
 ;; !(Truth_Deduction (STV Truth_Deduction Game_Lose_X) (STV Truth_Deduction (Board (Row X (Col O X)) (Rows (Row E (Col O X)) (Row E (Col O E))))) (STV Truth_Deduction Game_Win_O) (stv 0.812 0.015359999999999997) (stv 0.9 0.9)) ;; WARN: Use as a testcase, it used to fail on seed 1
