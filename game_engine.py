@@ -1,5 +1,7 @@
 import random
 import math
+from datetime import datetime
+
 
 # Constants
 X_MARK = "X"
@@ -65,6 +67,56 @@ class Board:
         return f"(Board ({' '.join(self.state)}))"
 
 
+def to_string(board: Board):
+    return board.to_string()
+
+
+def to_linear_string(board: Board):
+    return board.to_linear_string()
+
+
+def make_move(board: Board, index, mark):
+    board.make_move(int(index), mark)
+    return board
+
+
+def get_diff_index(board_a, board_b):
+    """
+    Returns the zero-based index where two boards differ.
+    Useful for identifying which move was made.
+    Returns None if boards are identical.
+    """
+    # Normalize inputs to ensure we have access to .state
+    b1 = board_a if isinstance(board_a, Board) else Board(board_a)
+    b2 = board_b if isinstance(board_b, Board) else Board(board_b)
+
+    for i in range(9):
+        if b1.state[i] != b2.state[i]:
+            return i
+
+
+def is_valid(board, move):
+    if int(move) in board.get_valid_moves():
+        return move
+    return None
+
+
+def save_board(board: Board):
+    filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.metta"
+    with open(filename, "w") as f:
+        f.write(f"(Loadable {board.to_linear_string()})")
+    return filename
+
+
+def remove_file(filename: str):
+    import os
+
+    if os.path.isfile(filename):
+        os.remove(filename)
+    else:
+        print(f"{filename} does not exist")
+
+
 class HammingScorer:
     """Calculates how close a player is to winning."""
 
@@ -114,6 +166,14 @@ class HammingScorer:
             ):
                 return board.state[a]
         return None
+
+
+def check_winner(board):
+    return HammingScorer.check_winner(board)
+
+
+def is_full(board):
+    return 1 if board.is_full() else 0
 
 
 class GameActions:

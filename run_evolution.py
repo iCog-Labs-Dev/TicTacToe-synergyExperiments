@@ -4,7 +4,16 @@ from gp_engine import GPEngine, PolicyGenome
 from game_engine import (
     Board,
     GameActions,
+    to_string,
+    to_linear_string,
+    make_move,
+    save_board,
+    remove_file,
     X_MARK,
+    check_winner,
+    get_diff_index,
+    is_valid,
+    is_full,
     save_policy_to_file,
     simulate_game_dynamics,
 )

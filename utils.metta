@@ -53,3 +53,19 @@
 (= (compose $f $g $x) ($f ($g $x)))
 
 (= (sum $a) (foldl + $a 0))
+
+(= (flattenBoard (Board (Row $1 (Col $2 $3)) (Rows (Row $4 (Col $5 $6)) (Row $7 (Col $8 $9))))) (Board ($1 $2 $3 $4 $5 $6 $7 $8 $9)))
+(= (bloatBoard (Board ($1 $2 $3 $4 $5 $6 $7 $8 $9))) (Board (Row $1 (Col $2 $3)) (Rows (Row $4 (Col $5 $6)) (Row $7 (Col $8 $9)))))
+
+(= (load_to_metta $x)
+   (let*
+      (
+        ($_ (import! &self $x))
+        ($content (match &self (Loadable $content) $content))
+        ($_ (remove-atom &self (Loadable $content)))
+        ($_ (py-call (run_evolution.remove_file $x)))
+      )
+      $content))
+
+(= (load_board_python $board) (py-call (run_evolution.Board $board)))
+(= (load_board_metta $board) (let $x (py-call (run_evolution.save_board $board)) (load_to_metta $x)))
