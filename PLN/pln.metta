@@ -434,14 +434,29 @@
 
 (= (ThompsonRank ()) (py-call (float "-inf")))
 
-(= (ThompsonRankNeg (Sentence ($x $tv) $ev)) (- 0.0 (ThompsonRank (Sentence ($x $tv) $ev))))
+(= (ThompsonRankNeg $item) (- 0.0 (ThompsonRank $item)))
 (= (ThompsonRankNeg ()) (py-call (float "-inf")))
+
+;; Expected Value of the probability distribution (Mean)
+;; Formula: s*c + prior*(1-c)
+;; Deterministic ranking based on Bayesian posterior expectation
+;; Pulls uncertain beliefs towards 0.5
+(= (BayesianRank (Sentence ($x (stv $f $c)) $Ev))
+   (let $prior 0.5
+     (+ (* $f $c) (* $prior (- 1.0 $c)))))
+;; (= (BayesianRank ()) (py-call (float "-inf"))) ;;INFO: Causes float_overflow error for some reason
+(= (BayesianRank ()) -9999.0)
+
+;; Negative rank for the limiter (removes lowest expected value)
+(= (BayesianRankNeg $item)
+   (- 0.0 (BayesianRank $item)))
+(= (BayesianRankNeg ()) (py-call (float "-inf")))
 
 ;;Return limited-sized version of $L (bounded PQ functionality)
 (= (LimitSize $L $size)
    (if (< (TupleCount $L) $size)
        $L
-       (let $lowestPriorityItem (BestCandidate ThompsonRankNeg () $L)
+       (let $lowestPriorityItem (BestCandidate PriorityRankNeg () $L)
             (LimitSize (Without $L $lowestPriorityItem) $size))))
 
 
@@ -452,7 +467,7 @@
        (let*
           (
             ($matches (filter-atom $Tasks (= (Sentence ($term $tv) $ev))))
-            ((Sentence $x $Ev1) (BestCandidate ThompsonRank () (if (== $matches ()) $Tasks $matches)))
+            ((Sentence $x $Ev1) (BestCandidate PriorityRank () (if (== $matches ()) $Tasks $matches)))
             ($derivations (collapse (superpose ((let* (
                                                         ((Sentence $y $Ev2) (superpose $Beliefs))
                                                         ($stamp (InsertionSort (TupleConcat $Ev1 $Ev2) ()))
