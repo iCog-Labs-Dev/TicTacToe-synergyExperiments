@@ -69,3 +69,16 @@
 
 (= (load_board_python $board) (py-call (run_evolution.Board $board)))
 (= (load_board_metta $board) (let $x (py-call (run_evolution.save_board $board)) (load_to_metta $x)))
+
+(= (saveExpressions $fileName $mettaExpressions)
+   (let*
+     (
+       ($stringExpressions (collapse (let $expression (superpose $mettaExpressions) (py-call (utils.to_metta_str $expression)))))
+       ($newStrExpressions (py-call (utils.join_metta_strs $stringExpressions)))
+       ($_ (py-call (utils.add_to_file $fileName $newStrExpressions)))
+     )
+     true))
+
+(= (saveExpression $fileName $mettaExpression)
+   (let $strExpression (py-call (utils.to_metta_str $mettaExpression))
+   (let $_ (py-call (utils.add_to_file $fileName $strExpression)) true)))
