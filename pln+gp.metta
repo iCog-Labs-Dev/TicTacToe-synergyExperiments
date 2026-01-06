@@ -114,6 +114,8 @@
                        (let $atoms (runGp $board $player) (BestCandidate ThompsonRank () $atoms))
                        $nextMove))
           ((Sentence (($link $currentBoard $nextBoard) $stv) $id) $gpMove)
+
+          ($_ (println! (if (!= $nextMove ()) (Pln Found move $nextMove) (GP Found move $gpMove))))
           ;; ($_ (println! (GpMove: $gpMove)))
           ;; ($_ (println! (NextBoard: $nextBoard)))
           ($_ (add-atom &perception (Implication $board $nextBoard)))
@@ -251,6 +253,7 @@
        (let*
           (
             ;; ($_ (println! (Inside game loop myTurn: $myTurn)))
+            ($opponent (flipPlayer $player))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
             ($nextBoard (if $myTurn
                             (let $nextMettaBoard (move $mettaBoard $player) (load_board_python (flattenBoard $nextMettaBoard)))
@@ -258,10 +261,10 @@
                                (
                                  ($move (takeInput $currentState))
                                )
-                               (py-call (run_evolution.make_move $currentState $move $player)))))
+                               (py-call (run_evolution.make_move $currentState $move $opponent)))))
             ($nextMettaBoard (bloatBoard (load_board_metta $nextBoard)))
             ($_ (drawBoard $nextBoard))
           )
-          (gameLoop $nextBoard (flipPlayer $player) (not $myTurn))))))
+          (gameLoop $nextBoard $opponent (not $myTurn))))))
 
-!(initGameState X)
+!(initGameState O)
