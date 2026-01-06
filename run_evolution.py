@@ -60,7 +60,7 @@ class TestEvolutionLogic(unittest.TestCase):
 
 
 def run_optimization(player, generations=20, minimax_max_depth=4):
-    print(f"\n--- Evolving Policy for Player {player} ---")
+    # print(f"\n--- Evolving Policy for Player {player} ---")
     random.seed(42)
 
     # Init GP Engine with configurable depth
@@ -75,22 +75,22 @@ def run_optimization(player, generations=20, minimax_max_depth=4):
     # Calculate Theoretical Max Fitness
     # Random(5) + Minimax(1..Depth * 2)
     max_possible_score = 5.0 + (2.0 * minimax_max_depth)
-    print(f"Target Max Fitness: {max_possible_score:.1f}")
+    # print(f"Target Max Fitness: {max_possible_score:.1f}")
 
     for g in range(generations):
         best_policy = engine.step_generation()
-        print(
-            f"Gen {g + 1}: Best Fitness = {best_policy.fitness:.2f} | Rule: {best_policy}"
-        )
+        # print(
+        #     f"Gen {g + 1}: Best Fitness = {best_policy.fitness:.2f} | Rule: {best_policy}"
+        # )
 
         # Check if we found a very strong policy (Allowing for slight imperfection, e.g. 1 draw)
         if best_policy.fitness >= (max_possible_score - 1.0):
-            print(
-                f"Found Strong Policy (Score {best_policy.fitness}/{max_possible_score})!"
-            )
+            # print(
+            #     f"Found Strong Policy (Score {best_policy.fitness}/{max_possible_score})!"
+            # )
             break
 
-    print(f"\nWinner for {player}: {engine.population[0]}")
+    # print(f"\nWinner for {player}: {engine.population[0]}")
 
     best_policy = engine.population[0]
     save_policy_to_file(best_policy.actions, generations, best_policy.fitness, player)

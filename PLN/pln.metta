@@ -172,7 +172,7 @@
 ; SymmetricModusPonens rule   see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/symmetric-modus-ponens.scm
 (= (Truth_SymmetricModusPonens (stv $sA $cA) (stv $sAB $cAB))
    (let* (
-          ($_ (println! (Calling Truth_SymmetricModusPonens)))
+          ;; ($_ (println! (Calling Truth_SymmetricModusPonens)))
           ($snotAB 0.2)
           ($cnotAB 1.0))
          (stv (+ (* $sA $sAB) (* (* $snotAB (negate $sA)) (+ 1.0 $sAB)))
@@ -181,7 +181,7 @@
 ;Revision: PLN Book "5.10.2 A Heuristic Revision Rule for Simple Truth-values", page 116:
 (= (Truth_Revision (stv $f1 $c1) (stv $f2 $c2))
    (let* (
-          ($_ (println! (Calling Truth_Revision)))
+          ;; ($_ (println! (Calling Truth_Revision)))
           ($w1 (Truth_c2w $c1))
           ($w2 (Truth_c2w $c2))
           ($w (+ $w1 $w2))
@@ -203,7 +203,7 @@
 ; see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/equivalence-to-implication.scm
 (= (Truth_equivalenceToImplication (stv $As $Ac) (stv $Bs $Bc) (stv $ABs $ABc))
     (let* (
-           ($_ (println! (Calling Truth_equivalenceToImplication)))
+           ;; ($_ (println! (Calling Truth_equivalenceToImplication)))
            ($ConclS (if (< 0.99 (* $ABs $ABc)) ; Hack to work around the lack of distributional
                                                ; TV. If ABs is high enough, we just set $ConclS as $ABs
                         $ABs
@@ -214,7 +214,7 @@
 ; see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/formulas.scm#L160-L173
 (= (TransitiveSimilarityStrength $sA $sB $sC $sAB $sBC)
    (let* (
-          ($_ (println! (Calling TransitiveSimilarityStrength)))
+          ;; ($_ (println! (Calling TransitiveSimilarityStrength)))
           ($T1 (/ (* (+ 1.0 (/ $sB $sA)) $sAB) (+ 1.0 $sAB)))
           ($T2 (/ (* (+ 1.0 (/ $sC $sB)) $sBC) (+ 1.0 $sBC)))
           ($T3 (/ (* (+ 1.0 (/ $sB $sC)) $sBC) (+ 1.0 $sBC)))
@@ -229,7 +229,7 @@
                                (stv $ABs $ABc)
                                (stv $BCs $BCc))
    (let* (
-          ($_ (println! (Calling Truth_transitiveSimilarity)))
+          ;; ($_ (println! (Calling Truth_transitiveSimilarity)))
           ($ConclS (TransitiveSimilarityStrength $As $Bs $Cs $ABs $BCs))
           ($ConclC (min $ABc $BCc)))
          (stv $ConclS $ConclC)))
@@ -254,7 +254,7 @@
                                 (stv $ABs $ABc)
                                 (stv $ACs $ACc))
    (let* (
-          ($_ (println! (Calling Truth_evaluationImplication)))
+          ;; ($_ (println! (Calling Truth_evaluationImplication)))
           ($ConclS (simpleDeductionStrength $Bs $As $Cs $ABs $ACs))
           ($ConclC (* (* 0.9 0.9)
                       (min5 $Bc $Ac $Cc $ACc (* 0.9 $ABc)))))
@@ -479,7 +479,7 @@
                                                           (empty)))
                                             (case (|- $x) ((($T3 $TV3) (Sentence ($T3 $TV3) $Ev1))))))))
 
-            ($_ (println! (SELECTED $steps (Sentence $x $Ev1))))
+            ;; ($_ (println! (SELECTED $steps (Sentence $x $Ev1))))
             ($terms (filter-atom $derivations (= (Sentence ($term $tv) $ev))))
           )
           (PLN.Derive
