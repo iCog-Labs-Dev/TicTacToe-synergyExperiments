@@ -24,6 +24,7 @@
 (= (increment $state) (let $n (get-state $state) (let $_ (change-state! $state (+ $n 1)) (get-state $state))))
 (= (update-atom $space $old $new) (match $space $old (let $_ (remove-atom $space $old) (add-atom $space $new))))
 
+;; FIX: Duplicate belief storage
 (= (populate-belief $atoms)
    (let*
       (
@@ -265,6 +266,6 @@
             ($nextMettaBoard (bloatBoard (load_board_metta $nextBoard)))
             ($_ (drawBoard $nextBoard))
           )
-          (gameLoop $nextBoard $opponent (not $myTurn))))))
+          (gameLoop $nextBoard $player (not $myTurn))))))
 
-!(initGameState O)
+!(initGameState X)
