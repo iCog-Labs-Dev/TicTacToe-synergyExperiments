@@ -102,7 +102,7 @@
         (
           ;; ($_ (println! (Before pln)))
           ($winningState (atom_concat Game_Win_ $player))
-          ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 200 300 200)) ;; TODO: Update PLN to preserve beliefs over a single query
+          ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 200 100 200)) ;; TODO: Update PLN to preserve beliefs over a single query
           ($nextMove (if (!= $winningPlan ())
                          (getNextMove $board $winningPlan)
                          (let $commonMovePlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 300 500 300)
@@ -135,7 +135,7 @@
 
 (= (drawBoard $currentState) (let $board (py-call (run_evolution.to_string $currentState)) (println! $board)))
 
-(= (takeInput $currentState $player)
+(= (takeInput $currentState)
    (let*
       (
         ($_ (println! (Make your move: <e.g> 0 - 8)))
@@ -144,7 +144,7 @@
       )
       (if (== $validMove $input) ;; valid
           $input
-          (let $x (println! (Move: $input is invalid)) (takeInput $currentState $player)))))
+          (let $x (println! (Move: $input is invalid)) (takeInput $currentState)))))
 
 (= (flipPlayer $player) (if (== $player X) O X))
 
@@ -224,7 +224,14 @@
 
 (= (gameLoop $currentState $player $myTurn)
    (if (boardFull $currentState)
-       (println! (Game ended in draw))
+       (let*
+          (
+            ($nextCount (increment &count))
+            ($mettaBoard (bloatBoard (load_board_metta $currentState)))
+
+            ($_ (add-atom &newPerceptions $mettaBoard))
+            ($_ (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard Draw) (stv 0.9 0.9)) ($nextCount)))))
+          (println! (Game ended in draw)))
    (if (gameOver $currentState)
        (let*
           (
@@ -249,10 +256,9 @@
                             (let $nextMettaBoard (move $mettaBoard $player) (load_board_python (flattenBoard $nextMettaBoard)))
                             (let*
                                (
-                                 ($move (takeInput $currentState $player))
-                                 ($mark (flipPlayer $player))
+                                 ($move (takeInput $currentState))
                                )
-                               (py-call (run_evolution.make_move $currentState $move $mark)))))
+                               (py-call (run_evolution.make_move $currentState $move $player)))))
             ($nextMettaBoard (bloatBoard (load_board_metta $nextBoard)))
             ($_ (drawBoard $nextBoard))
           )
