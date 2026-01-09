@@ -103,7 +103,7 @@
         (
           ;; ($_ (println! (Before pln)))
           ($winningState (atom_concat Game_Win_ $player))
-          ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 200 100 200)) ;; TODO: Update PLN to preserve beliefs over a single query
+          ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 200 100 200))
           ($nextMove (if (!= $winningPlan ())
                          (getNextMove $board $winningPlan)
                          (let $commonMovePlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 300 500 300)
@@ -238,8 +238,9 @@
    (if (gameOver $currentState)
        (let*
           (
-            ($winningState (atom_concat Game_Win_ $player))
-            ($_ (println! (GameOver! Winner is: (py-call (run_evolution.check_winner $currentState)))))
+            ($winner (py-call (run_evolution.check_winner $currentState)))
+            ($winningState (atom_concat Game_Win_ $winner))
+            ($_ (println! (GameOver! Winner is: $winner)))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
             ($nextCount (increment &count))
 

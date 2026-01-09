@@ -400,7 +400,7 @@ def save_policy_to_file(policy_actions, generation, fitness, player_mark):
 
         f.write("    return None\n")
 
-    print(f"Policy code saved to {filename}")
+    # print(f"Policy code saved to {filename}")
 
 
 def play_terminal_game(opponent_policy_func):
