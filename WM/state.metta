@@ -1,2 +1,2 @@
-(Count 50)
-(GameCount 5)
+(Count 101)
+(GameCount 12)

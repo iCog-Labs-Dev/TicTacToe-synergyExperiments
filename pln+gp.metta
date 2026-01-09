@@ -16,9 +16,10 @@
                       (foldall + (match &perception $fact 1) 0)
                       (foldall + (match &perception ($link $a $fact) 1) 0))) ;; Positive count
               ($N (match &stateSpace (GameCount $x) $x)) ;; Total count
+              ($s (py-call (round (/safe $m $N) 4)))
               ;; ($_ (println! (M: $m fact: $fact)))
             )
-            (stv (/safe $m $N) (/ $N (+ $N (K)))))
+            (stv (if (> $s 1) 1 $s) (py-call (round (/ $N (+ $N (K))) 4))))
           )
 
 (= (increment $state) (let $n (get-state $state) (let $_ (change-state! $state (+ $n 1)) (get-state $state))))
@@ -28,41 +29,48 @@
 (= (populate-belief $atoms)
    (let*
       (
-        ($updatedPercept' (collapse (let $percept (superpose $atoms) ($percept (STV $percept)))))
-        ;; ($_ (println! (UpdatedPercept: $updatedPercept' )))
-        ($updatedPercept (unique-atom $updatedPercept'))
-        ($oldBeliefs (collapse (let $percept (superpose $updatedPercept) (match &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stv) $Ev)))))
+        ($uniqueAtoms (unique-atom $atoms))
+        ($updatedPerceptTruthPair (collapse (let $percept (superpose $uniqueAtoms) ($percept (STV $percept)))))
+        ;; ($_ (println! (UpdatedPercept: $updatedPerceptTruthPair)))
+        ($oldBeliefs (collapse (let ($percept $stvN) (superpose $updatedPerceptTruthPair) (match &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stv) $Ev)))))
         ($revisedPercepts (collapse (let*
                (
-                 (($percept $stvN) (superpose $updatedPercept))
-                 ((Sentence ($percept $stv) $Ev) (get-atoms &belief))
+                 (($percept $stvN) (superpose $updatedPerceptTruthPair))
+                 ((Sentence ($percept $stv) $Ev) (superpose $oldBeliefs))
                  ((Sentence ($percept $stvU) $Ev) (BestCandidate PriorityRank () (collapse (|- ($percept $stv) ($percept $stvN)))))
                  ($_ (update-atom &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stvU) $Ev)))
                )
                $percept)))
-        ($revisedPercepts' (unique-atom $revisedPercepts))
-        ($revisedPercept (collapse (let $percept (superpose $revisedPercepts') ($percept $stv))))
-        ($revisedBeliefs (collapse (let $percept (superpose $revisedPercepts') (match &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stv) $Ev)))))
-        ;; ($updatedPercepts (collapse (let ($percept $stvU) (superpose $updatedPercept) $percept)))
-        ($newBeliefs (subtraction-atom $updatedPercept $revisedPercept))
+        ($uniqueRevisedPercepts (unique-atom $revisedPercepts))
+        ($updatedPercepts (collapse (let ($percept $stv) (superpose $updatedPerceptTruthPair) $percept)))
+        ($revisedBeliefs (collapse (let $percept (superpose $uniqueRevisedPercepts) (match &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stv) $Ev)))))
+        ($newPercepts (subtraction-atom $updatedPercepts $uniqueRevisedPercepts))
+        ($newBeliefs (collapse (let*
+                                 (
+                                   ($percept (superpose $newPercepts))
+                                   (($percept $stvN) (superpose $updatedPerceptTruthPair))
+                                   ($i (increment &count))
+                                 )
+                                 (Sentence ($percept $stvN) ($i)))))
         ($injectedBeliefs (collapse (get-atoms &newBeliefs)))
         ($_ (collapse (let*
                          (
                            ;; ($_ (println! (NewBeliefs: $newBeliefs)))
-                           (($percept $stvN) (superpose $newBeliefs))
-                           ($i (increment &count))
-                           ;; ($_ (println! (Added I: $i of percept: $percept)))
+                           ($belief (superpose $newBeliefs))
+                           ;; ($_ (println! (Added Belief: $belief)))
                          )
-                         (add-atom &belief (Sentence ($percept $stvN) ($i))))))
+                         (add-atom &belief $belief))))
 
-        ($newBeliefs' (collapse (let $percept (superpose $newBeliefs) (match &belief (Sentence $percept ($i)) (Sentence $percept ($i))))))
-        ($totalBeliefs (union-atom $injectedBeliefs $revisedBeliefs))
-        ;; ($_ (println! (NewPercepts: $newBeliefs)))
-        ;; ($_ (println! (RevisedPercepts: $revisedPercepts')))
+        ($previousBeliefs (union-atom $injectedBeliefs $revisedBeliefs))
+        ($totalBeliefs (union-atom $previousBeliefs $newBeliefs))
+        ;; ($_ (println! (NewPercepts: $newPercepts)))
+        ;; ($_ (println! (RevisedPercepts:  $uniqueRevisedPercepts)))
         ;; ($_ (println! (NewBeliefs': (collapse (get-atoms &belief)))))
         ;; ($_ (println! (NewBeliefs: $newBeliefs)))
+        ($_ (println! (OldBeliefs: $oldBeliefs)))
+        ($_ (println! (TotalBeleifs: $totalBeliefs)))
       )
-      ((union-atom $totalBeliefs $newBeliefs') $oldBeliefs))
+      ($totalBeliefs $oldBeliefs))
 )
 
 (= (getNextMove $currentState (Sentence (($link $initialState $finalState) $stv) $plan))
@@ -159,7 +167,7 @@
      (
        ;; ($_ (println! (Inside SaveBelief)))
        ;; ($_ (println! (NewBeliefs: $newBeliefs)))
-       ($ro (utils.remove_from_file "WM/belief.metta" $oldBeliefs))
+       ($ro (py-call (utils.remove_from_file "WM/belief.metta" $oldBeliefs)))
        ($rn (saveExpressions "WM/belief.metta" $newBeliefs))
      )
      true))
@@ -231,9 +239,14 @@
           (
             ($nextCount (increment &count))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
+            ($exists (!= (collapse (match &belief
+                                          (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev)
+                                          (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev))) ()))
 
             ($_ (add-atom &newPerceptions $mettaBoard))
-            ($_ (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard Draw) (stv 0.9 0.9)) ($nextCount)))))
+            ($_ (if $exists
+                    true
+                    (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) ($nextCount))))))
           (println! (Game ended in draw)))
    (if (gameOver $currentState)
        (let*
@@ -243,12 +256,15 @@
             ($_ (println! (GameOver! Winner is: $winner)))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
             ($nextCount (increment &count))
+            ($exists (!= (collapse (match &belief
+                                          (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev)
+                                          (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev))) ()))
 
             ;; ($_ (println! (Adding (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) ($nextCount)) into Belief)))
 
-            ($_ (add-atom &perception $mettaBoard))
-            ($_ (add-atom &newPerceptions $mettaBoard))
-            ($_ (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) ($nextCount))))
+            ($_ (if $exists
+                    true
+                    (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) ($nextCount)))))
           )
           true
        )
