@@ -466,7 +466,7 @@
        ($Tasks $Beliefs)
        (let*
           (
-            ($matches (filter-atom $Tasks (= (Sentence ($term $tv) $ev))))
+            (($matches) (collapse (filter-atom $Tasks (= (Sentence ($term $tv) $ev)))))
             ((Sentence $x $Ev1) (BestCandidate PriorityRank () (if (== $matches ()) $Tasks $matches)))
             ($derivations (collapse (superpose ((let* (
                                                         ((Sentence $y $Ev2) (superpose $Beliefs))
@@ -479,8 +479,8 @@
                                                           (empty)))
                                             (case (|- $x) ((($T3 $TV3) (Sentence ($T3 $TV3) $Ev1))))))))
 
-            ;; ($_ (println! (SELECTED $steps (Sentence $x $Ev1))))
-            ($terms (filter-atom $derivations (= (Sentence ($term $tv) $ev))))
+            ($_ (println! (SELECTED $steps (Sentence $x $Ev1))))
+            (($terms) (collapse (filter-atom $derivations (= (Sentence ($term $tv1) $ev1)))))
           )
           (PLN.Derive
                             (Unique (TupleConcat (TupleConcat (LimitSize (Without (Unique (TupleConcat $Tasks $derivations) ()) (Sentence $x $Ev1)) (- $taskqueuesize (+ (length $matches) (length $terms)))) $matches) $terms) ())
@@ -529,9 +529,9 @@
      ($candidates (collapse (case (superpose $BeliefsRet)
                                      (((Sentence ($Term $TV) $Ev) (case (= $Term $term)
                                                                        ((True (Sentence ($Term $TV) $Ev)))))))))
-     ($stvs (collapse (let ($term $stv) (superpose $candidates) $stv)))
-     ($bestStv (BestCandidate ConfidenceRank () $stvs))
-     ($bestCandidate (collapse (let ($term $bestStv) (superpose $candidates) ($term $bestStv))))
+     ($stvs (collapse (let (Sentence ($Term $stv) $Ev) (superpose $candidates) ($stv $Ev))))
+     (($bestStv $ev) (BestCandidate ConfidenceRank () $stvs))
+     (($bestCandidate) (collapse (let (Sentence ($Term $bestStv) $ev) (superpose $candidates) (Sentence ($Term $bestStv) $ev))))
    )
    $bestCandidate
    ;; (superpose $candidates)
@@ -548,5 +548,11 @@
 (= (PLN.Query $kb $term $maxsteps)
    (PLN.Query $kb $term $maxsteps (PLN.Config.TaskQueueSize) (PLN.Config.BeliefQueueSize))) ;default space bound
 
+;; TODO: Consider saving the PLN intermidiate belief states to memory as well. 
+;; This may increase performance the next time it tries to infer if the already
+;;  generated beliefs serve as a cache. But testing is needed as that might not be
+;;  the case and PLN might end up generating them again anyway.
+;; If the chache doesn't change the performance, maybe we need to modify PLN so that
+;;  it can use caches too.
 (= (PLN.Query $kb $term)
    (PLN.Query $kb $term (PLN.Config.MaxSteps))) ;default steps bound
