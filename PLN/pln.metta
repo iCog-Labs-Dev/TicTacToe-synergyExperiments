@@ -1,4 +1,10 @@
 (= (K) 50)
+;; (= (L) 1.0)
+;; (= (T) 0.1)
+
+(= (EXP) 2.71828)
+
+(= (ln-math $n) (log-math (EXP) $n))
 
 (= (clamp $v $min $max)
    (min $max (max $v $min)))
@@ -314,36 +320,36 @@
 
 ;Usage of inheritance for predicates
 ;unary arg
-(= (|- ((Evaluation (Predicate $x)
-                    (List (Concept $C))) $T1)
-       ((Inheritance (Concept $S) (Concept $C)) $T2))
-   ((Evaluation (Predicate $x)
-                (List (Concept $S))) (Truth_ModusPonens $T1 $T2)))
+;; (= (|- ((Evaluation (Predicate $x)
+;;                     (List (Concept $C))) $T1)
+;;        ((Inheritance (Concept $S) (Concept $C)) $T2))
+;;    ((Evaluation (Predicate $x)
+;;                 (List (Concept $S))) (Truth_ModusPonens $T1 $T2)))
 
 ;binary arg1
-(= (|- ((Evaluation (Predicate $x)
-                    (List (Concept $C1) (Concept $C2))) $T1)
-       ((Inheritance (Concept $S) (Concept $C1)) $T2))
-   ((Evaluation (Predicate $x)
-                (List (Concept $S) (Concept $C2))) (Truth_ModusPonens $T1 $T2)))
+;; (= (|- ((Evaluation (Predicate $x)
+;;                     (List (Concept $C1) (Concept $C2))) $T1)
+;;        ((Inheritance (Concept $S) (Concept $C1)) $T2))
+;;    ((Evaluation (Predicate $x)
+;;                 (List (Concept $S) (Concept $C2))) (Truth_ModusPonens $T1 $T2)))
 
 ;binary arg2
-(= (|- ((Evaluation (Predicate $x)
-                    (List (Concept $C1) (Concept $C2))) $T1)
-       ((Inheritance (Concept $S) (Concept $C2)) $T2))
-   ((Evaluation (Predicate $x)
-                (List (Concept $C1) (Concept $S))) (Truth_ModusPonens $T1 $T2)))
+;; (= (|- ((Evaluation (Predicate $x)
+;;                     (List (Concept $C1) (Concept $C2))) $T1)
+;;        ((Inheritance (Concept $S) (Concept $C2)) $T2))
+;;    ((Evaluation (Predicate $x)
+;;                 (List (Concept $C1) (Concept $S))) (Truth_ModusPonens $T1 $T2)))
 
 ; negation elimination rule (introduction now handled by Translator), see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/not-elimination.scm#L1-L8
-(= (|- ((Not $A) $T)) ($A (Truth_Negation $T)))
+;; (= (|- ((Not $A) $T)) ($A (Truth_Negation $T)))
 
 ; Inheritance Inversion Rule, see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/inversion.scm
-(= (|- ((Inheritance $A $B) $Truth))
-   ((Inheritance $B $A) (Truth_inversion (STV $B) $Truth)))
+;; (= (|- ((Inheritance $A $B) $Truth))
+;;    ((Inheritance $B $A) (Truth_inversion (STV $B) $Truth)))
 
 ; Implication Inversion Rule (same)
-(= (|- ((Implication $A $B) $Truth))
-   ((Implication $B $A) (Truth_inversion (STV $B) $Truth)))
+;; (= (|- ((Implication $A $B) $Truth))
+;;    ((Implication $B $A) (Truth_inversion (STV $B) $Truth)))
 
 ; Equivalence to Implication Rule, see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/equivalence-to-implication.scm
 (= (|- ((Equivalence $A $B) $Truth))
@@ -355,26 +361,26 @@
                                                         (STV $B) $Truth)))
 
 ; transitive similarity Rule, see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/transitive-similarity.scm
-(= (|- ((Similarity $A $B) $T1)
-       ((Similarity $B $C) $T2))
-   ((Similarity $A $C) (Truth_transitiveSimilarity (STV $A)
-                                                   (STV $B)
-                                                   (STV $C) $T1 $T2)))
+;; (= (|- ((Similarity $A $B) $T1)
+;;        ((Similarity $B $C) $T2))
+;;    ((Similarity $A $C) (Truth_transitiveSimilarity (STV $A)
+;;                                                    (STV $B)
+;;                                                    (STV $C) $T1 $T2)))
 
 ; Evaluation Implication Rule, see https://github.com/opencog/pln/blob/master/opencog/pln/rules/wip/evaluation-implication.scm
-(= (|- ((Evaluation $A $B) $TruthAB)
-       ((Implication $A $C) $TruthAC))
-   ((Evaluation $C $B) (Truth_evaluationImplication (STV $A)
-                                                    (STV $B)
-                                                    (STV $C) $TruthAB $TruthAC)))
+;; (= (|- ((Evaluation $A $B) $TruthAB)
+;;        ((Implication $A $C) $TruthAC))
+;;    ((Evaluation $C $B) (Truth_evaluationImplication (STV $A)
+;;                                                     (STV $B)
+;;                                                     (STV $C) $TruthAB $TruthAC)))
 
 ; extensional - Member deduction rule, see https://github.com/opencog/pln/blob/master/opencog/pln/rules/extensional/member-deduction.scm
 ; we are using the truth of deduction here
-(= (|- ((Member $A $B) $T1)
-       ((Inheritance $B $C) $T2))
-   ((Member $A $C) (Truth_Deduction (STV $A)
-                                    (STV $B)
-                                    (STV $C) $T1 $T2)))
+;; (= (|- ((Member $A $B) $T1)
+;;        ((Inheritance $B $C) $T2))
+;;    ((Member $A $C) (Truth_Deduction (STV $A)
+;;                                     (STV $B)
+;;                                     (STV $C) $T1 $T2)))
 
 ;;How many derivation steps (task selections)
 (= (PLN.Config.MaxSteps) 100)
@@ -432,10 +438,10 @@
           ($beta  (beta-param (- 1.0 $f) $N)))
          (py-call (random.betavariate $alpha $beta))))
 
-(= (ThompsonRank ()) (py-call (float "-inf")))
+(= (ThompsonRank ()) -99999.0)
 
-(= (ThompsonRankNeg $item) (- 0.0 (ThompsonRank $item)))
-(= (ThompsonRankNeg ()) (py-call (float "-inf")))
+(= (ThompsonRankNeg (Sentence ($x (stv $f $c)) $Ev1)) (- 0.0 (ThompsonRank (Sentence ($x (stv $f $c)) $Ev1))))
+(= (ThompsonRankNeg ()) -99999.0)
 
 ;; Expected Value of the probability distribution (Mean)
 ;; Formula: s*c + prior*(1-c)
@@ -448,9 +454,17 @@
 (= (BayesianRank ()) -9999.0)
 
 ;; Negative rank for the limiter (removes lowest expected value)
-(= (BayesianRankNeg $item)
-   (- 0.0 (BayesianRank $item)))
-(= (BayesianRankNeg ()) (py-call (float "-inf")))
+(= (BayesianRankNeg (Sentence ($x (stv $f $c)) $Ev))
+   (- 0.0 (BayesianRank (Sentence ($x (stv $f $c)) $Ev))))
+(= (BayesianRankNeg ()) -9999.0)
+
+;; (= (GumbelMaxRank (Sentence ($x (stv $f $c)) $Ev)) 
+;;    (let $u (+ $f (* (L) (- 1 $c))) (- $u (* (T) (ln-math (* -1 (ln-math (py-call (random.random)))))))))
+;; (= (GumbelMaxRank ()) -9999.0)
+;;
+;; (= (GumbelMaxRankNeg (Sentence ($x (stv $f $c)) $Ev))
+;;    (- 0.0 (GumbelMaxRank (Sentence ($x (stv $f $c)) $Ev))))
+;; (= (GumbelMaxRankNeg ()) -9999.0)
 
 ;;Return limited-sized version of $L (bounded PQ functionality)
 (= (LimitSize $L $size)
@@ -466,8 +480,9 @@
        ($Tasks $Beliefs)
        (let*
           (
-            (($matches) (collapse (filter-atom $Tasks (= (Sentence ($term $tv) $ev)))))
-            ((Sentence $x $Ev1) (BestCandidate PriorityRank () (if (== $matches ()) $Tasks $matches)))
+            ($result (collapse (filter-atom $Tasks (= (Sentence ($term $tv) $ev)))))
+            ($matches (if (!= $result ()) (car-atom $result) ()))
+            ((Sentence $x $Ev1) (BestCandidate ThompsonRank () (if (== $matches ()) $Tasks $matches)))
             ($derivations (collapse (superpose ((let* (
                                                         ((Sentence $y $Ev2) (superpose $Beliefs))
                                                         ($stamp (InsertionSort (TupleConcat $Ev1 $Ev2) ()))
@@ -480,8 +495,10 @@
                                             (case (|- $x) ((($T3 $TV3) (Sentence ($T3 $TV3) $Ev1))))))))
 
             ($_ (println! (SELECTED $steps (Sentence $x $Ev1))))
-            (($terms) (collapse (filter-atom $derivations (= (Sentence ($term $tv1) $ev1)))))
+            ($derResult (collapse (filter-atom $derivations (= (Sentence ($term $tv1) $ev1)))))
+            ($terms (if (!= $derResult ()) (car-atom $derResult) ()))
           )
+
           (PLN.Derive
                             (Unique (TupleConcat (TupleConcat (LimitSize (Without (Unique (TupleConcat $Tasks $derivations) ()) (Sentence $x $Ev1)) (- $taskqueuesize (+ (length $matches) (length $terms)))) $matches) $terms) ())
                             (Unique (LimitSize (Unique (TupleConcat (TupleConcat $terms (Unique (TupleConcat $Beliefs $derivations) ())) $matches) ()) (- $beliefqueuesize (+ (length $matches) (length $terms)))) ())
@@ -530,10 +547,14 @@
                                      (((Sentence ($Term $TV) $Ev) (case (= $Term $term)
                                                                        ((True (Sentence ($Term $TV) $Ev)))))))))
      ($stvs (collapse (let (Sentence ($Term $stv) $Ev) (superpose $candidates) ($stv $Ev))))
-     (($bestStv $ev) (BestCandidate ConfidenceRank () $stvs))
-     (($bestCandidate) (collapse (let (Sentence ($Term $bestStv) $ev) (superpose $candidates) (Sentence ($Term $bestStv) $ev))))
+     ($stvEvPair (BestCandidate ConfidenceRank () $stvs))
+     ($bestCandidate (collapse (let*
+                                    (
+                                      (($bestStv $ev) $stvEvPair)
+                                      ((Sentence ($Term $bestStv) $ev) (superpose $candidates)))
+                                    (Sentence ($Term $bestStv) $ev))))
    )
-   $bestCandidate
+    (if (!= $bestCandidate ()) (car-atom $bestCandidate) ())
    ;; (superpose $candidates)
    )
    ;; (BestCandidate ConfidenceRank () (collapse (let ($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize)
