@@ -494,7 +494,7 @@
                                                           (empty)))
                                             (case (|- $x) ((($T3 $TV3) (Sentence ($T3 $TV3) $Ev1))))))))
 
-            ($_ (println! (SELECTED $steps (Sentence $x $Ev1))))
+            ;; ($_ (println! (SELECTED $steps (Sentence $x $Ev1))))
             ($derResult (collapse (filter-atom $derivations (= (Sentence ($term $tv1) $ev1)))))
             ($terms (if (!= $derResult ()) (car-atom $derResult) ()))
           )

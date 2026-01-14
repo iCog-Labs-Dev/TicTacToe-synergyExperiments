@@ -490,7 +490,6 @@ def simulate_game_dynamics(
     if winner or board.is_full() or _current_depth >= depth:
         return
 
-    opponent = O_MARK if player == X_MARK else X_MARK
     prev_state_str = board.to_linear_string()
 
     # 1. Execute Move Logic
