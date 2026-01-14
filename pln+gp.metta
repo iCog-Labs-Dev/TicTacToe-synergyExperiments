@@ -66,8 +66,8 @@
         ;; ($_ (println! (RevisedPercepts:  $uniqueRevisedPercepts)))
         ;; ($_ (println! (NewBeliefs': (collapse (get-atoms &belief)))))
         ;; ($_ (println! (NewBeliefs: $newBeliefs)))
-        ($_ (println! (OldBeliefs: $oldBeliefs)))
-        ($_ (println! (TotalBeleifs: $totalBeliefs)))
+        ;; ($_ (println! (OldBeliefs: $oldBeliefs)))
+        ;; ($_ (println! (TotalBeleifs: $totalBeliefs)))
       )
       ($totalBeliefs $oldBeliefs))
 )
@@ -78,10 +78,10 @@
        ;; ($_ (println! (Plan: $plan)))
        ($moveId (superpose $plan))
        ;; ($_ (println! (MoveId: $moveId)))
-       ($interState (match &belief (Sentence (($links $currentState $interState) $stvs) ($moveId)) $interState))
+       ($movePair (match &belief (Sentence (($links $currentState $interState) $stvs) ($moveId)) (Sentence (($links $currentState $interState) $stvs) ($moveId))))
        ;; ($_ (println! (InterState: $interState)))
      )
-     $interState))
+     $movePair))
 
 
 (= (runGp $board $player)
@@ -109,13 +109,13 @@
    (let*
         (
           ;; ($_ (println! (Before pln)))
-          ($winningState (atom_concat Game_Win_ $player))
-          ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 200 100 200))
+          ($winningState (GameWin $player)) ;; TODO: Also handle draw states
+          ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 800 300 800))
           ($nextMove (if (!= $winningPlan ())
-                         (getNextMove $board $winningPlan)
-                         (let $commonMovePlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 300 500 300)
-                              (if (!= $commonMovePlan ())
-                                  (let (Sentence ((Implication $board $nextMove) $stv) $id) $commonMovePlan $nextMove)
+                         (let $_ (println! (WinningPlan Found: $winningPlan)) (getNextMove $board $winningPlan))
+                         (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
+                              (if (!= $commonPlan ())
+                                  (getNextMove $board $commonPlan)
                                   ()))))
           ;; ($_ (println! (NextMove: $nextMove)))
           ($gpMove (if (== $nextMove ())
@@ -233,25 +233,11 @@
 
 
 (= (gameLoop $currentState $player $myTurn)
-   (if (boardFull $currentState)
-       (let*
-          (
-            ($nextCount (increment &count))
-            ($mettaBoard (bloatBoard (load_board_metta $currentState)))
-            ($exists (!= (collapse (match &belief
-                                          (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev)
-                                          (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev))) ()))
-
-            ($_ (add-atom &newPerceptions $mettaBoard))
-            ($_ (if $exists
-                    true
-                    (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) ($nextCount))))))
-          (println! (Game ended in draw)))
    (if (gameOver $currentState)
        (let*
           (
             ($winner (py-call (run_evolution.check_winner $currentState)))
-            ($winningState (atom_concat Game_Win_ $winner))
+            ($winningState (GameWin $winner))
             ($_ (println! (GameOver! Winner is: $winner)))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
             ($nextCount (increment &count))
@@ -267,6 +253,20 @@
           )
           true
        )
+   (if (boardFull $currentState)
+       (let*
+          (
+            ($nextCount (increment &count))
+            ($mettaBoard (bloatBoard (load_board_metta $currentState)))
+            ($exists (!= (collapse (match &belief
+                                          (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9)) $Ev)
+                                          (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev))) ()))
+
+            ($_ (add-atom &newPerceptions $mettaBoard))
+            ($_ (if $exists
+                    true
+                    (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard Draw) (stv 0.9 0.9)) ($nextCount))))))
+          (println! (Game ended in draw)))
        (let*
           (
             ;; ($_ (println! (Inside game loop myTurn: $myTurn)))
