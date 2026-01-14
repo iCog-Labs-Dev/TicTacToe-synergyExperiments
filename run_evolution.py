@@ -93,12 +93,12 @@ def run_optimization(player, generations=20, minimax_max_depth=4):
     # print(f"\nWinner for {player}: {engine.population[0]}")
 
     best_policy = engine.population[0]
-    save_policy_to_file(best_policy.actions, generations, best_policy.fitness, player)
+    # save_policy_to_file(best_policy.actions, generations, best_policy.fitness, player)
     return best_policy
 
 
 def run_moses(board, player, depth=1, game_id=1):
-    best_x = run_optimization("X", generations=15, minimax_max_depth=4)
+    best_x = run_optimization(player, generations=15, minimax_max_depth=4)
     simulate_game_dynamics(board, best_x.actions, depth, player, game_id=game_id)
     return True
 
