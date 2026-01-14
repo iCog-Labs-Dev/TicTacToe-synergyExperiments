@@ -25,7 +25,6 @@
 (= (increment $state) (let $n (get-state $state) (let $_ (change-state! $state (+ $n 1)) (get-state $state))))
 (= (update-atom $space $old $new) (match $space $old (let $_ (remove-atom $space $old) (add-atom $space $new))))
 
-;; FIX: Duplicate belief storage
 (= (populate-belief $atoms)
    (let*
       (
@@ -278,8 +277,15 @@
                             (let*
                                (
                                  ($move (takeInput $currentState))
+                                 ($nextState (py-call (run_evolution.make_move $currentState $move $opponent)))
+                                 ($nextMettaboard (bloatBoard (load_board_metta $nextState)))
+                                 ($_ (add-atom &perception $nextMettaboard))
+                                 ($_ (add-atom &newPerceptions $nextMettaboard))
+
+                                 ($_ (add-atom &perception (Implication $mettaBoard $nextMettaboard)))
+                                 ($_ (add-atom &newPerceptions (Implication $mettaBoard $nextMettaboard)))
                                )
-                               (py-call (run_evolution.make_move $currentState $move $opponent)))))
+                               $nextState)))
             ($nextMettaBoard (bloatBoard (load_board_metta $nextBoard)))
             ($_ (drawBoard $nextBoard))
           )
