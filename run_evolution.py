@@ -1,4 +1,5 @@
 import unittest
+import shutil
 import random
 from gp_engine import GPEngine, PolicyGenome
 from game_engine import (
@@ -104,8 +105,28 @@ def run_moses(board, player, depth=1, game_id=1):
 
 
 def clean_file(filename):
+    backup_filename = filename + ".bak"
+    shutil.copyfile(filename, backup_filename)
     with open(filename, "w") as f:
         f.write("")
+    return True
+
+
+def restore_file(filename):
+    import os
+
+    backup_filename = filename + ".bak"
+    if not os.path.exists(backup_filename):
+        print(f"Backup file for {filename} does not exist. No changes made.")
+        return False
+
+    with open(backup_filename, "r") as f:
+        data = f.read()
+
+    shutil.copyfile(filename, backup_filename)
+
+    with open(filename, "w") as f:
+        f.write(data)
     return True
 
 
