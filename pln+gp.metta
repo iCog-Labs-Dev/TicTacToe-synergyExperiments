@@ -7,7 +7,11 @@
 !(bind! &belief (new-space))
 !(bind! &newBeliefs (new-space))
 !(bind! &stateSpace (new-space))
+
 !(bind! &count (new-state 0))
+!(bind! &plnWinMoves (new-state 0))
+!(bind! &plnCommonMoves (new-state 0))
+!(bind! &totalMoves (new-state 0))
 
 (= (STV $fact)
           (let*
@@ -112,18 +116,20 @@
           ($winningState (GameWin $player)) ;; TODO: Also handle draw states
           ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 800 300 800))
           ($nextMove (if (!= $winningPlan ())
-                         (let $_ (println! (WinningPlan Found: $winningPlan)) (getNextMove $board $winningPlan))
+                         (let $_ (println! (WinningPlan Found: $winningPlan))
+                              (let $wpr (increment &plnWinMoves) (getNextMove $board $winningPlan)))
                          (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
                               (if (!= $commonPlan ())
-                                  (getNextMove $board $commonPlan)
+                                  (let $cpr (increment &plnCommonMoves) (getNextMove $board $commonPlan))
                                   ()))))
           ;; ($_ (println! (NextMove: $nextMove)))
           ($gpMove (if (== $nextMove ())
                        (let $atoms (runGp $board $player) (BestCandidate ThompsonRank () $atoms))
                        $nextMove))
           ((Sentence (($link $currentBoard $nextBoard) $stv) $id) $gpMove)
+          ($tmr (increment &totalMoves))
 
-          ($_ (println! (if (!= $nextMove ()) (Pln Found move $nextMove) (GP Found move $gpMove))))
+          ;; ($_ (println! (if (!= $nextMove ()) (Pln Found move $nextMove) (GP Found move $gpMove))))
           ;; ($_ (println! (GpMove: $gpMove)))
           ;; ($_ (println! (NextBoard: $nextBoard)))
           ($_ (add-atom &perception (Implication $board $nextBoard)))
@@ -193,7 +199,9 @@
 ;;    When the game is over update beliefs
 ;;    Save belief and perceptions into the space.
 
-(= (initGameState $player)
+;; The adversary tells us where adversary's input comes from. E.g. terminal input for human.
+;; Adversary can be: Human, MiniMax
+(= (initGameState $player $adversary)
    (let*
         (
           ($initState (py-call (run_evolution.Board (Board (E E E E E E E E E)))))
@@ -207,7 +215,7 @@
           ($pa (add-atom &perception (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E))))))
           ($npa (add-atom &newPerceptions (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E))))))
 
-          ($_ (gameLoop $initState $player (== $player X)))
+          ($winningState (gameLoop $adversary $initState $player (== $player X)))
           (($gameCount) (collapse (match &stateSpace (GameCount $x) $x)))
 
           ;; ($_ (println! ""))
@@ -229,10 +237,10 @@
           ($rb (saveBeliefs $beliefs))
           ($rc (saveCounts ($lastCount $gameCount)))
         )
-        true))
+        $winningState))
 
 
-(= (gameLoop $currentState $player $myTurn)
+(= (gameLoop $adversary $currentState $player $myTurn)
    (if (gameOver $currentState)
        (let*
           (
@@ -251,7 +259,7 @@
                     true
                     (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) ($nextCount)))))
           )
-          true
+          (GameWinner $winner)
        )
    (if (boardFull $currentState)
        (let*
@@ -265,8 +273,9 @@
             ($_ (add-atom &newPerceptions $mettaBoard))
             ($_ (if $exists
                     true
-                    (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard Draw) (stv 0.9 0.9)) ($nextCount))))))
-          (println! (Game ended in draw)))
+                    (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard Draw) (stv 0.9 0.9)) ($nextCount)))))
+            ($_ (println! (Game ended in draw))))
+          (GameWinner NoOne))
        (let*
           (
             ;; ($_ (println! (Inside game loop myTurn: $myTurn)))
@@ -276,9 +285,21 @@
                             (let $nextMettaBoard (move $mettaBoard $player) (load_board_python (flattenBoard $nextMettaBoard)))
                             (let*
                                (
-                                 ($move (takeInput $currentState))
-                                 ($nextState (py-call (run_evolution.make_move $currentState $move $opponent)))
-                                 ($nextMettaboard (bloatBoard (load_board_metta $nextState)))
+                                 ($nextMettaboard (case $adversary
+                                                        (
+                                                          (Human (let*
+                                                                    (
+                                                                      ($move (takeInput $currentState))
+                                                                      ($nextState (py-call (run_evolution.make_move $currentState $move $opponent))))
+                                                                    (bloatBoard (load_board_metta $nextState))))
+
+                                                          (MiniMax (let*
+                                                                      (
+                                                                        ((Board $mettaBoard) (load_board_metta $currentState))
+                                                                        ($miniMaxNextBoard (minimax-player $mettaBoard $opponent))
+                                                                      )
+                                                                      (bloatBoard $miniMaxNextBoard))))))
+
                                  ($_ (add-atom &perception $nextMettaboard))
                                  ($_ (add-atom &newPerceptions $nextMettaboard))
 
@@ -289,6 +310,6 @@
             ($nextMettaBoard (bloatBoard (load_board_metta $nextBoard)))
             ($_ (drawBoard $nextBoard))
           )
-          (gameLoop $nextBoard $player (not $myTurn))))))
+          (gameLoop $adversary $nextBoard $player (not $myTurn))))))
 
-!(initGameState X)
+!(initGameState X Human)
