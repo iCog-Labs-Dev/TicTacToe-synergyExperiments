@@ -151,16 +151,25 @@
 
 (= (drawBoard $currentState) (let $board (py-call (run_evolution.to_string $currentState)) (println! $board)))
 
-(= (takeInput $currentState)
-   (let*
-      (
-        ($_ (println! (Make your move: <e.g> 0 - 8)))
-        ($input (readln!))
-        ($validMove (py-call (run_evolution.is_valid $currentState $input)))
-      )
-      (if (== $validMove $input) ;; valid
-          $input
-          (let $x (println! (Move: $input is invalid)) (takeInput $currentState)))))
+(= (takeInput $adversary $opponent $currentState)
+   (case $adversary
+          (
+            (Human (let*
+                      (
+                        ($_ (println! (Make your move: <e.g> 0 - 8)))
+                        ($input (readln!))
+                        ($validMove (py-call (run_evolution.is_valid $currentState $input)))
+                      )
+                      (if (== $validMove $input) ;; valid
+                          $input
+                          (let $x (println! (Move: $input is invalid)) (takeInput $adversary $opponent $currentState)))))
+
+            (MiniMax (let*
+                        (
+                          ((Board $miniMaxBoard) (load_board_metta $currentState))
+                          (($idx $nextBoard) (minimax-player $miniMaxBoard $opponent)))
+                        $idx))))
+)
 
 (= (flipPlayer $player) (if (== $player X) O X))
 
@@ -206,6 +215,7 @@
         (
           ($initState (py-call (run_evolution.Board (Board (E E E E E E E E E)))))
           ($_ (import! &perception ./WM/perception))
+          ($_ (import! &belief ./WM/permanent-belief))
           ($_ (import! &belief ./WM/belief))
           ($_ (import! &stateSpace ./WM/state))
           (($lastCount) (collapse (match &stateSpace (Count $x) $x)))
@@ -236,8 +246,10 @@
 
           ($rb (saveBeliefs $beliefs))
           ($rc (saveCounts ($lastCount $gameCount)))
+          ($csrs (collapse (clearSpace (superpose (&perception &newPerceptions &belief &newBeliefs &stateSpace))))) ;; Cleaning up the space for next execution ;; FIX: Preferably we want to keep this and terminate only when the game play is stopped.
         )
         $winningState))
+
 
 
 (= (gameLoop $adversary $currentState $player $myTurn)
@@ -285,20 +297,11 @@
                             (let $nextMettaBoard (move $mettaBoard $player) (load_board_python (flattenBoard $nextMettaBoard)))
                             (let*
                                (
-                                 ($nextMettaboard (case $adversary
-                                                        (
-                                                          (Human (let*
-                                                                    (
-                                                                      ($move (takeInput $currentState))
-                                                                      ($nextState (py-call (run_evolution.make_move $currentState $move $opponent))))
-                                                                    (bloatBoard (load_board_metta $nextState))))
-
-                                                          (MiniMax (let*
-                                                                      (
-                                                                        ((Board $mettaBoard) (load_board_metta $currentState))
-                                                                        ($miniMaxNextBoard (minimax-player $mettaBoard $opponent))
-                                                                      )
-                                                                      (bloatBoard $miniMaxNextBoard))))))
+                                 ($nextMettaboard (let*
+                                                      (
+                                                        ($move (takeInput $adversary $opponent $currentState))
+                                                        ($nextState (py-call (run_evolution.make_move $currentState $move $opponent))))
+                                                      (bloatBoard (load_board_metta $nextState))))
 
                                  ($_ (add-atom &perception $nextMettaboard))
                                  ($_ (add-atom &newPerceptions $nextMettaboard))
@@ -312,4 +315,4 @@
           )
           (gameLoop $adversary $nextBoard $player (not $myTurn))))))
 
-!(initGameState X Human)
+;; !(initGameState X Human)

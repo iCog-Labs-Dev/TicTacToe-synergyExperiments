@@ -82,3 +82,5 @@
 (= (saveExpression $fileName $mettaExpression)
    (let $strExpression (py-call (utils.to_metta_str $mettaExpression))
    (let $_ (py-call (utils.add_to_file $fileName $strExpression)) true)))
+
+(= (clearSpace $space) (let $result (collapse (match $space $x (remove-atom $space $x))) true))
