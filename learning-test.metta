@@ -5,10 +5,17 @@
 !(bind! &totalGames (new-state 0))
 !(bind! &totalLoss (new-state 0))
 
-;; Modify the PLN to save:
-;;    how many PLN next moves predicted
-;;    how many PLN winning moves predicted
-;; Modify the take input function to chose between policy and terminal user based on a globally set parameter
+(= (resetCounts)
+   (let*
+      (
+
+          ($_ (py-call (run_evolution.clean_file "WM/state.metta")))
+          ($content (let $strs (collapse (superpose (
+                                                (py-call (utils.to_metta_str (Count 1)))
+                                                (py-call (utils.to_metta_str (GameCount 1)))))) (py-call (utils.join_metta_strs $strs))))
+          ($ra (py-call (utils.add_to_file "WM/state.metta" $content)))
+      )
+       true))
 
 ;; N is number of times the game will be played where opponent 
 ;;  is whether the adversery is a human or another policy which
@@ -19,8 +26,11 @@
         ;; Start from empty perception and belief to make the test fair. But back up is kept to restore it back.
         ($_ (py-call (run_evolution.clean_file "WM/perception.metta")))
         ($_ (py-call (run_evolution.clean_file "WM/belief.metta")))
+        ($_ (py-call (run_evolution.backup_file "WM/state.metta")))
+        ($_ (resetCounts))
+
         ($_ (runTest $n X $adversary))
-        
+
         ;; Collected states
         ($totalGame (get-state &totalGames))
         ($totalLoss (get-state &totalLoss))
@@ -44,7 +54,8 @@
         ($_ (println! ""))
 
         ($_ (py-call (run_evolution.restore_file "WM/perception.metta")))
-        ($_ (py-call (run_evolution.restore_file "WM/belief.metta"))))
+        ($_ (py-call (run_evolution.restore_file "WM/belief.metta")))
+        ($_ (py-call (run_evolution.restore_file "WM/state.metta"))))
       true))
 
 (= (runTest $n $player $adversary)

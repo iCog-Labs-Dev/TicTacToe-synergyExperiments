@@ -130,6 +130,12 @@ def restore_file(filename):
     return True
 
 
+def backup_file(filename):
+    backup_filename = filename + ".bak"
+    shutil.copyfile(filename, backup_filename)
+    return True
+
+
 # if __name__ == "__main__":
 #     # # 1. Run Unit Tests
 #     # print("Running Tests...")

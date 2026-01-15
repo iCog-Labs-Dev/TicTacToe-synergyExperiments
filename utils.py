@@ -22,7 +22,7 @@ def remove_from_file(filename: str, targets: list):
 
     removed = False
 
-    with fileinput.input(filename, inplace=True, backup=".bak") as file:
+    with fileinput.input(filename, inplace=True, backup=".bak.bak") as file:
         for line in file:
             # Check if ANY of the converted targets are inside the current line
             match_found = any(t in line for t in converted_targets)
