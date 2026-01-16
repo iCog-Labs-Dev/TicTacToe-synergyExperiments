@@ -15,33 +15,16 @@
                 (cons-atom $h $rest)))))
 
 (= (get-winner $bs)
-   ;; 1. Check Rows
-   (let $r1 (check-line $bs 0 1 2) 
-     (if (not (== $r1 E)) $r1
-     (let $r2 (check-line $bs 3 4 5)
-       (if (not (== $r2 E)) $r2
-       (let $r3 (check-line $bs 6 7 8)
-         (if (not (== $r3 E)) $r3
-
-   ;; 2. Check Columns
-   (let $c1 (check-line $bs 0 3 6)
-     (if (not (== $c1 E)) $c1
-     (let $c2 (check-line $bs 1 4 7)
-       (if (not (== $c2 E)) $c2
-       (let $c3 (check-line $bs 2 5 8)
-         (if (not (== $c3 E)) $c3
-
-   ;; 3. Check Diagonals
-   (let $d1 (check-line $bs 0 4 8)
-     (if (not (== $d1 E)) $d1
-     (let $d2 (check-line $bs 2 4 6)
-       (if (not (== $d2 E)) $d2
-       
-   ;; 4. No Winner
-       E)))))))))))))))))
+   (let $result (filter-atom (map-atom ( ;; 1. Check Rows
+                                         (0 1 2) (3 4 5) (6 7 8)
+                                         ;; 2. Check Columns
+                                         (0 3 6) (1 4 7) (2 5 8)
+                                         ;; 3. Check Diagonals
+                                         (0 4 8) (2 4 6)) (check-line $bs)) (!= E))
+        (if (!= $result ()) (car-atom $result) E)))
 
 ;; Helper: Checks if indices A, B, and C are identical and not Empty
-(= (check-line $bs $a $b $c)
+(= (check-line $bs ($a $b $c))
     (let* (($v1 (index-atom $bs $a))
            ($v2 (index-atom $bs $b))
            ($v3 (index-atom $bs $c)))
