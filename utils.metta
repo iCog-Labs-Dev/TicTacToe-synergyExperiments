@@ -84,3 +84,24 @@
    (let $_ (py-call (utils.add_to_file $fileName $strExpression)) true)))
 
 (= (clearSpace $space) (let $result (collapse (match $space $x (remove-atom $space $x))) true))
+
+(= (genIdx $u) (genIdx 0 $u))
+(= (genIdx $l $u)
+    (if (< $u $l)
+        ()
+        (let $res (genIdx $l (- $u 1))
+            (union-atom $res ($u)))))
+
+(= (getDiffBoard $board1 $board2)
+   (let*
+     (
+      ($boards (zipWith != $board1 $board2))
+      ($idxs (genIdx (length $boards)))
+      ($boardIdxs (zip $boards $idxs))
+      ((($_ $idx)) (filter-atom $boardIdxs (first-from-pair)))
+     )
+     $idx
+   ))
+
+!(getDiffBoard (X X X E E E E E E) (X X X E E E O E E) )
+
