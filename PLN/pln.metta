@@ -470,7 +470,7 @@
 (= (LimitSize $L $size)
    (if (< (TupleCount $L) $size)
        $L
-       (let $lowestPriorityItem (BestCandidate PriorityRankNeg () $L)
+       (let $lowestPriorityItem (BestCandidate ThompsonRankNeg () $L)
             (LimitSize (Without $L $lowestPriorityItem) $size))))
 
 

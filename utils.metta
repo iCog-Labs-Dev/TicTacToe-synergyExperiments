@@ -102,6 +102,3 @@
      )
      $idx
    ))
-
-!(getDiffBoard (X X X E E E E E E) (X X X E E E O E E) )
-

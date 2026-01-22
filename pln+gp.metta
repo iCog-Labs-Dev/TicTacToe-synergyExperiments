@@ -1,6 +1,5 @@
 !(import! &self ./PLN/pln)
 !(import! &self "run_evolution.py")
-!(import! &self utils)
 
 !(bind! &perception (new-space))
 !(bind! &newPerceptions (new-space))
@@ -118,10 +117,14 @@
           ($nextMove (if (!= $winningPlan ())
                          (let $_ (println! (WinningPlan Found: $winningPlan))
                               (let $wpr (increment &plnWinMoves) (getNextMove $board $winningPlan)))
-                         (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
-                              (if (!= $commonPlan ())
-                                  (let $cpr (increment &plnCommonMoves) (getNextMove $board $commonPlan))
-                                  ()))))
+                         (let $drawPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board Draw) 800 300 800)
+                              (if (!= $drawPlan ())
+                                  (let $_ (println! (DrawPlan Found: $drawPlan))
+                                      (let $dpr (increment &plnWinMoves) (getNextMove $board $drawPlan)))
+                                  (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
+                                      (if (!= $commonPlan ())
+                                          (let $cpr (increment &plnCommonMoves) (getNextMove $board $commonPlan))
+                                          ()))))))
           ;; ($_ (println! (NextMove: $nextMove)))
           ($gpMove (if (== $nextMove ())
                        (let $atoms (runGp $board $player) (BestCandidate ThompsonRank () $atoms))
@@ -168,7 +171,24 @@
                         (
                           ((Board $miniMaxBoard) (load_board_metta $currentState))
                           (($idx $nextBoard) (minimax-player $miniMaxBoard $opponent)))
-                        $idx))))
+                        $idx))
+            (Random (let*
+                        (
+                          ((Board $randomBoard) (load_board_metta $currentState))
+                          (($idx $nextBoard) (random-player $randomBoard $opponent)))
+                        $idx))
+            (GP12X (let*
+                                    (
+                                      ((Board $gp12Board) (load_board_metta $currentState))
+                                      (($idx $nextBoard) (gpPlayer12 $gp12Board $opponent)))
+                                    $idx))
+
+            (GP6O (let*
+                                    (
+                                      ((Board $gp6Board) (load_board_metta $currentState))
+                                      (($idx $nextBoard) (gpPlayer6 $gp6Board $opponent)))
+                                    $idx))
+            ))
 )
 
 (= (flipPlayer $player) (if (== $player X) O X))
@@ -315,4 +335,3 @@
           )
           (gameLoop $adversary $nextBoard $player (not $myTurn))))))
 
-;; !(initGameState X Human)
