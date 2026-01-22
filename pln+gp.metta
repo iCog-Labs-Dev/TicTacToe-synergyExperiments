@@ -1,6 +1,5 @@
 !(import! &self ./PLN/pln)
 !(import! &self "run_evolution.py")
-!(import! &self utils)
 
 !(bind! &perception (new-space))
 !(bind! &newPerceptions (new-space))
@@ -336,4 +335,3 @@
           )
           (gameLoop $adversary $nextBoard $player (not $myTurn))))))
 
-;; !(initGameState X Human)

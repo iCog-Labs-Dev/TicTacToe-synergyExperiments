@@ -62,7 +62,7 @@ class TestEvolutionLogic(unittest.TestCase):
 
 def run_optimization(player, generations=20, minimax_max_depth=4):
     # print(f"\n--- Evolving Policy for Player {player} ---")
-    random.seed(42)
+    # random.seed(42)
 
     # Init GP Engine with configurable depth
     engine = GPEngine(
