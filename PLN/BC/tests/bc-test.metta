@@ -11,9 +11,9 @@
 !(import! &self ./game-data)
 !(import! &self ../main-loop)
 
-; !(bc-drive &self 
-;       (GameWin X)
-;     ())
+!(bc-drive &self 
+      (GameWin X)
+    ())
 
 ; !(pln-bc &self 
 ;       (GameWin X)
@@ -58,7 +58,7 @@
 ; !(add-atom &kb (Sentence (cat (stv 0.6 0.99)) (33)))
 ; !(add-atom &kb (Sentence (animal (stv 0.7 0.7)) (3345)))
 
-; !(pln-bc &kb  bite (S (S Z)) ())
+; !(pln-bc &kb bite (S (S Z)) ())
 
 ; !(bind! &kb (new-space))
 
@@ -97,3 +97,6 @@
 ; !(concated (StampConcat (1 2) (3 4)))
 ; !(getNodeSTV &kb dog)
 
+
+; !(Truth_ModusPonens (stv 0.4 0.6) (stv 0.4 0.6))
+; !(pln-bc &kb dog (S (S Z)) ())
