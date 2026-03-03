@@ -7,7 +7,7 @@
             (match $kb (Sentence (($link-type $C $B) $tv-cb) $ev-cb)
                 (if (StampDisjoint $ev $ev-cb)
                     (let* (($next-ev (StampConcat $ev $ev-cb))
-                          ((Sentence (($link-type $C $A) $tv-ca) $ev-final) (pln-bc $kb ($link-type $C $A) $depth $next-ev))
+                          ((Sentence (($link-type $C $A) $tv-ca) $ev-final) (eval (pln-bc $kb ($link-type $C $A) $depth $next-ev)))
                           ($stv-a (getNodeSTV $kb $A))
                           ($stv-b (getNodeSTV $kb $B))
                           ($stv-c (getNodeSTV $kb $C))

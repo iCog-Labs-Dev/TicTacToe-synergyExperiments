@@ -5,8 +5,7 @@
                 (StampDisjoint $ev $goal-ev))
               
               (let* (($next-ev (StampConcat $ev $goal-ev))
-                  ;   ($_ (println! ("been here" $next-ev)))
-                    ((Sentence ($premise $stv-premise) $premise-ev) (pln-bc $kb $premise $k $next-ev))
+                    ((Sentence ($premise $stv-premise) $premise-ev) (eval (pln-bc $kb $premise $k $next-ev)))
                     ($combined-stv (Truth_ModusPonens $stv $stv-premise))
                     ($evidence-list (StampConcat $premise-ev $next-ev))
                     ($_ (add-atom $kb (Sentence ($goal $combined-stv) $evidence-list))))
