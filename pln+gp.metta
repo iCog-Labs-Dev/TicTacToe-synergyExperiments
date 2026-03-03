@@ -1,6 +1,16 @@
 !(import! &self ./PLN/pln)
 !(import! &self "run_evolution.py")
 
+!(import! &self ./PLN/BC/utilities/helpers)
+; !(import! &self ./PLN/BC/tests/game-data)
+!(import! &self ./PLN/BC/abduction)
+!(import! &self ./PLN/BC/inversion)
+!(import! &self ./PLN/BC/lookup)
+
+!(import! &self ./PLN/BC/modus-ponens)
+!(import! &self ./PLN/BC/syllogisitic-deduction)
+!(import! &self ./PLN/BC/main-loop)
+
 !(bind! &perception (new-space))
 !(bind! &newPerceptions (new-space))
 !(bind! &belief (new-space))
@@ -113,15 +123,18 @@
         (
           ;; ($_ (println! (Before pln)))
           ($winningState (GameWin $player)) ;; TODO: Also handle draw states
-          ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 800 300 800))
+          ($winningPlan (bc-drive &belief (Inheritance $board $winningState) ()))
+          ; ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 800 300 800))
           ($nextMove (if (!= $winningPlan ())
                          (let $_ (println! (WinningPlan Found: $winningPlan))
                               (let $wpr (increment &plnWinMoves) (getNextMove $board $winningPlan)))
-                         (let $drawPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board Draw) 800 300 800)
+                        ;  (let $drawPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board Draw) 800 300 800)
+                         (let $drawPlan (bc-drive &belief (Inheritance $board Draw) ())
                               (if (!= $drawPlan ())
                                   (let $_ (println! (DrawPlan Found: $drawPlan))
                                       (let $dpr (increment &plnWinMoves) (getNextMove $board $drawPlan)))
-                                  (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
+                                  ; (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
+                                  (let $commonPlan (bc-drive &belief (Implication $board (Board $row $rows)) ())
                                       (if (!= $commonPlan ())
                                           (let $cpr (increment &plnCommonMoves) (getNextMove $board $commonPlan))
                                           ()))))))
@@ -129,6 +142,7 @@
           ($gpMove (if (== $nextMove ())
                        (let $atoms (runGp $board $player) (BestCandidate ThompsonRank () $atoms))
                        $nextMove))
+          ($_ (println! (GpMove: $gpMove)))
           ((Sentence (($link $currentBoard $nextBoard) $stv) $id) $gpMove)
           ($tmr (increment &totalMoves))
 
@@ -335,3 +349,6 @@
           )
           (gameLoop $adversary $nextBoard $player (not $myTurn))))))
 
+; !(bc-drive &self (Inheritance (Board (Row X (Col O X)) (Rows (Row O (Col X E)) (Row X (Col O E)))) (GameWin X)) ())
+; !(bc-drive &self (Inheritance (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (GameWin X)) ())
+; !(bc-drive &beliefGameWin X)) (S (S Z)) ())

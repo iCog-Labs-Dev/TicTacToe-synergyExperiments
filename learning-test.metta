@@ -109,8 +109,8 @@
 !(testLearning 10 GP12X) ;; Should be 7
 !(testLearning 15 MiniMax) ;; Should stay the same
 
-;; Test
-!(testLearning 5 MiniMax)
+; ;; Test
+; !(testLearning 5 MiniMax)
 
 ;; !(initGameState X Human)
 ;; !(testLearning 5 Random)
