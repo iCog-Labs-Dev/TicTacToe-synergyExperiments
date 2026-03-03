@@ -294,6 +294,19 @@ class GameActions:
 
         return False, board
 
+    @staticmethod
+    def play_random(board, player):
+        """
+        Only used when no other move is generated
+        """
+        all_moves = board.get_valid_moves()
+
+        # Pick random if multiple blocks exist (though usually 1)
+        move = random.choice(all_moves)
+        new_board = board.copy()
+        new_board.make_move(move, player)
+        return True, new_board
+
 
 # Mapping for GP use
 ACTION_MAP = {
@@ -513,7 +526,9 @@ def simulate_game_dynamics(
                     break  # Policy picks first success
 
         if not moved:
-            return
+            success, new_board = GameActions.play_random(board, player)
+            next_boards.append(new_board)
+            moved = True
 
     else:
         # --- OPPONENT TURN ---
