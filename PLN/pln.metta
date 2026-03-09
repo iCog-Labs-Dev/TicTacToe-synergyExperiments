@@ -398,10 +398,15 @@
                           (case (== $x $y) ((True True)))))))
 
 ;;Concat stamp with sorting
+; (= (StampConcat $stamp $addition)
+;    (if (== $addition ())
+;        $stamp
+;        (InsertionSort (TupleConcat $stamp $addition) ())))
+
 (= (StampConcat $stamp $addition)
    (if (== $addition ())
        $stamp
-       (InsertionSort (TupleConcat $stamp $addition) ())))
+       (TupleConcat $stamp $addition)))
 
 ;;retrieve the best candidate (PQ functionality)
 (= (BestCandidate $evaluateCandidateFunction $bestCandidate $tuple)
