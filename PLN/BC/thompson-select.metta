@@ -1,9 +1,7 @@
-(= (min-stv) 1.0e-10)
-
+(= (min-stv) 1.0e-12)
 ; (= (clamp $v $lo $hi)
 ;    (min $hi (max $lo $v)))
 
-; x in [1e-10, 1] -> [0, 1]
 ;; log-scale small values of confidence and strength for betta distribution to enable exploration
 (= (scale01 $x)
    (let* (($xx (max $x (min-stv)))
