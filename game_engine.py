@@ -1,5 +1,6 @@
 import random
-import math
+import math, os
+import atexit
 from datetime import datetime
 
 
@@ -65,7 +66,8 @@ class Board:
     def to_linear_string(self):
         """Returns the board in (Board (X E ...)) format for S-Expressions."""
         return f"(Board ({' '.join(self.state)}))"
-
+    def __str__(self):
+        return f"(Loadable {self.to_linear_string()})"
 
 def to_string(board: Board):
     return board.to_string()
@@ -102,19 +104,31 @@ def is_valid(board, move):
 
 
 def save_board(board: Board):
-    filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.metta"
-    with open(filename, "w") as f:
-        f.write(f"(Loadable {board.to_linear_string()})")
-    return filename
+    target_dir = "/Users/bitseat/KiraFiles/iCogLabs/moving-forward/TicTacToe-synergyExperiments/"
+    
+    # If your filename is just '20260311_172757.metta', this joins them safely
+    base_name = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"{base_name}.metta"
+    absolute_filepath = os.path.join(target_dir, filename)
 
+    with open(absolute_filepath, "w") as f:
+        f.write(f"(Loadable {board.to_linear_string()})")
+    # atexit.register(lambda: os.remove(absolute_filepath) if os.path.exists(absolute_filepath) else None)
+    return base_name
 
 def remove_file(filename: str):
     import os
 
-    if os.path.isfile(filename):
-        os.remove(filename)
+    if not filename.endswith('.metta'):
+        filename += '.metta'
+
+    target_dir = "/Users/bitseat/KiraFiles/iCogLabs/moving-forward/TicTacToe-synergyExperiments/"
+    absolute_filepath = os.path.join(target_dir, os.path.basename(filename))
+
+    if os.path.isfile(absolute_filepath):
+        os.remove(absolute_filepath)
     else:
-        print(f"{filename} does not exist")
+        print(f"{absolute_filepath} does not exist")
 
 
 class HammingScorer:
