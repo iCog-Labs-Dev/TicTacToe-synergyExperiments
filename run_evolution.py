@@ -148,3 +148,5 @@ def backup_file(filename):
 #
 #     # 3. Run Evolution for O (Depth 4)
 #     # best_o = run_optimization("O", generations=15, minimax_max_depth=4)
+def test_none():
+    return None

@@ -110,17 +110,17 @@
 (= (STV $fact)
           (let*
             (
-              ;; ($_ (println! (Calling STV for $fact)))
+              ;; ($__1 (println! (Calling STV for $fact)))
               ($m (foldl-atom (if (= $fact ($link $a $b)) (collapse (match &perception $fact 1)) (collapse (match &perception ($link $a $fact) 1))) 0 +)) ;; Positive count
               ($N (foldl-atom (collapse (match &perception $x 1)) 0 +)) ;; Total count
-              ;; ($_ (println! (Found M: $m and N: $N)))
-              ;; ($_ (println! ""))
+              ;; ($__2 (println! (Found M: $m and N: $N)))
+              ;; ($__3 (println! ""))
             )
             (stv (/ $m $N) (/ $N (+ $N (K)))))
           )
 
-(= (increment $state) (let $n (get-state $state) (let $_ (change-state! $state (+ $n 1)) (get-state $state))))
-(= (update-atom $space $old $new) (match $space $old (let $_ (remove-atom $space $old) (add-atom $space $new))))
+(= (increment $state) (let $n (get-state $state) (let $__4 (change-state! $state (+ $n 1)) (get-state $state))))
+(= (update-atom $space $old $new) (match $space $old (let $__5 (remove-atom $space $old) (add-atom $space $new))))
 
 (= (populate-belief $atoms)
    (let*
@@ -132,12 +132,12 @@
                  (($percept $stvN) (superpose $updatedPercept))
                  ((Sentence ($percept $stv) $Ev) (get-atoms &belief))
                  ((Sentence ($percept $stvU) $Ev) (BestCandidate PriorityRank () (collapse (|- ($percept $stv) ($percept $stvN)))))
-                 ($_ (update-atom &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stvU) $Ev)))
+                 ($__6 (update-atom &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stvU) $Ev)))
                )
                $percept)))
         ($revisedPercepts' (unique-atom $revisedPercepts))
         ($newBeliefs (subtraction-atom $updatedPercept $revisedPercepts'))
-        ($_ (collapse (let*
+        ($__7 (collapse (let*
                          (
                            (($percept $stvN) (superpose $newBeliefs))
                            ($i (increment &count))
@@ -178,7 +178,7 @@
 ;;    (
 ;;       (($bestCandidate $belief) (PLN.Query (collapse (get-atoms &belief)) (Inheritance (Board (Row E (Col E E)) (Rows (Row E (Col O E)) (Row X (Col E X)))) Game_Win_X) 400 200 300))
 ;;       ;; (($bestCandidate $belief) (PLN.Query (collapse (get-atoms &belief)) (Implication (Board (Row E (ColE E)) (Rows (Row E (Col E E)) (Row E (Col E E)))) (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E X))))) 400 200 300))
-;;       ;; ($_ (println! (Best Candidate STV: $bestCandidate)))
+;;       ;; ($__8 (println! (Best Candidate STV: $bestCandidate)))
 ;;       ;; ($beliefs (collapse (populate-belief $belief)))
 ;;    )
 ;;    $bestCandidate)
@@ -263,12 +263,12 @@
 (= (findSeed $p $f $n)
    (let*
       (
-        ($_ (println! (Trying Seed: $n)))
-        ($_ (println! ""))
-        ($_ (py-call (random.seed $n)))
-        ;; ($_ (py-call (time.sleep 1)))
+        ($__9 (println! (Trying Seed: $n)))
+        ($__10 (println! ""))
+        ($__11 (py-call (random.seed $n)))
+        ;; ($__12 (py-call (time.sleep 1)))
         ($result (eval $f) )
-        ($_ (println! ""))
+        ($__13 (println! ""))
       )
       (if ($p $result)
           $n

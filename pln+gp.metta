@@ -23,27 +23,27 @@
                       (foldall + (match &perception ($link $a $fact) 1) 0))) ;; Positive count
               ($N (match &stateSpace (GameCount $x) $x)) ;; Total count
               ($s (py-call (round (/safe $m $N) 4)))
-              ;; ($_ (println! (M: $m fact: $fact)))
+              ;; ($__1 (println! (M: $m fact: $fact)))
             )
             (stv (if (> $s 1) 1 $s) (py-call (round (/ $N (+ $N (K))) 4))))
           )
 
-(= (increment $state) (let $n (get-state $state) (let $_ (change-state! $state (+ $n 1)) (get-state $state))))
-(= (update-atom $space $old $new) (match $space $old (let $_ (remove-atom $space $old) (add-atom $space $new))))
+(= (increment $state) (let $n (get-state $state) (let $__2 (change-state! $state (+ $n 1)) (get-state $state))))
+(= (update-atom $space $old $new) (match $space $old (let $__3 (remove-atom $space $old) (add-atom $space $new))))
 
 (= (populate-belief $atoms)
    (let*
       (
         ($uniqueAtoms (unique-atom $atoms))
         ($updatedPerceptTruthPair (collapse (let $percept (superpose $uniqueAtoms) ($percept (STV $percept)))))
-        ;; ($_ (println! (UpdatedPercept: $updatedPerceptTruthPair)))
+        ;; ($__4 (println! (UpdatedPercept: $updatedPerceptTruthPair)))
         ($oldBeliefs (collapse (let ($percept $stvN) (superpose $updatedPerceptTruthPair) (match &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stv) $Ev)))))
         ($revisedPercepts (collapse (let*
                (
                  (($percept $stvN) (superpose $updatedPerceptTruthPair))
                  ((Sentence ($percept $stv) $Ev) (superpose $oldBeliefs))
                  ((Sentence ($percept $stvU) $Ev) (BestCandidate PriorityRank () (collapse (|- ($percept $stv) ($percept $stvN)))))
-                 ($_ (update-atom &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stvU) $Ev)))
+                 ($__5 (update-atom &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stvU) $Ev)))
                )
                $percept)))
         ($uniqueRevisedPercepts (unique-atom $revisedPercepts))
@@ -58,22 +58,22 @@
                                  )
                                  (Sentence ($percept $stvN) ($i)))))
         ($injectedBeliefs (collapse (get-atoms &newBeliefs)))
-        ($_ (collapse (let*
+        ($__6 (collapse (let*
                          (
-                           ;; ($_ (println! (NewBeliefs: $newBeliefs)))
+                           ;; ($__7 (println! (NewBeliefs: $newBeliefs)))
                            ($belief (superpose $newBeliefs))
-                           ;; ($_ (println! (Added Belief: $belief)))
+                           ;; ($__8 (println! (Added Belief: $belief)))
                          )
                          (add-atom &belief $belief))))
 
         ($previousBeliefs (union-atom $injectedBeliefs $revisedBeliefs))
         ($totalBeliefs (union-atom $previousBeliefs $newBeliefs))
-        ;; ($_ (println! (NewPercepts: $newPercepts)))
-        ;; ($_ (println! (RevisedPercepts:  $uniqueRevisedPercepts)))
-        ;; ($_ (println! (NewBeliefs': (collapse (get-atoms &belief)))))
-        ;; ($_ (println! (NewBeliefs: $newBeliefs)))
-        ;; ($_ (println! (OldBeliefs: $oldBeliefs)))
-        ;; ($_ (println! (TotalBeleifs: $totalBeliefs)))
+        ;; ($__9 (println! (NewPercepts: $newPercepts)))
+        ;; ($__10 (println! (RevisedPercepts:  $uniqueRevisedPercepts)))
+        ;; ($__11 (println! (NewBeliefs': (collapse (get-atoms &belief)))))
+        ;; ($__12 (println! (NewBeliefs: $newBeliefs)))
+        ;; ($__13 (println! (OldBeliefs: $oldBeliefs)))
+        ;; ($__14 (println! (TotalBeleifs: $totalBeliefs)))
       )
       ($totalBeliefs $oldBeliefs))
 )
@@ -81,11 +81,11 @@
 (= (getNextMove $currentState (Sentence (($link $initialState $finalState) $stv) $plan))
    (let*
      (
-       ;; ($_ (println! (Plan: $plan)))
+       ;; ($__15 (println! (Plan: $plan)))
        ($moveId (superpose $plan))
-      ;  ($_ (println! (MoveId: $moveId)))
+      ;  ($__16 (println! (MoveId: $moveId)))
        ($movePair (match &belief (Sentence (($links $currentState $interState) $stvs) ($moveId)) (Sentence (($links $currentState $interState) $stvs) ($moveId))))
-       ;; ($_ (println! (InterState: $interState)))
+       ;; ($__17 (println! (InterState: $interState)))
      )
      $movePair))
 
@@ -93,13 +93,13 @@
 (= (runGp $board $player)
    (let*
      (
-       ;; ($_ (println! (Inside runGp)))
+       ;; ($__18 (println! (Inside runGp)))
        ($flatBoard (flattenBoard $board))
-       ($_ (py-call (run_evolution.run_moses $flatBoard $player 2 2)))
-       ($_ (import! &self policies))
-       ($_ (py-call (run_evolution.clean_file "policies.metta")))
+       ($__19 (py-call (run_evolution.run_moses $flatBoard $player 2 2)))
+       ($__20 (import! &self policies))
+       ($__21 (py-call (run_evolution.clean_file "policies.metta")))
        ($atoms (collapse (match &self (Sentence (($link $flatBoard $nextBoard) $stv) $id) 
-                            (let $_ (remove-atom &self (Sentence (($link $flatBoard $nextBoard) $stv) $id)) (Sentence (($link $flatBoard (bloatBoard $nextBoard)) $stv) $id)))))
+                            (let $__22 (remove-atom &self (Sentence (($link $flatBoard $nextBoard) $stv) $id)) (Sentence (($link $flatBoard (bloatBoard $nextBoard)) $stv) $id)))))
      )
      $atoms))
 
@@ -114,20 +114,20 @@
 (= (move $board $player)
    (let*
         (
-          ;; ($_ (println! (Before pln)))
+          ;; ($__23 (println! (Before pln)))
           ($winningState (GameWin $player)) ;; TODO: Also handle draw states
           ; ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 800 300 800))
-          ($_ (println! "Here"))
-          ($_ (println! (board $board)))
+          ($__24 (println! "Here"))
+          ($__25 (println! (board $board)))
           ($winningPlan (BC.drive &belief $winningState $board (S (S (S (S (S (S (S (S Z))))))))))
-          ($_ (println! (winning plansdsAD: $winningPlan)))
+          ($__26 (println! (winning plansdsAD: $winningPlan)))
           ($nextMove (if (!= $winningPlan ())
-                         (let $_ (println! (WinningPlan Found: $winningPlan))
+                         (let $__27 (println! (WinningPlan Found: $winningPlan))
                               (let $wpr (increment &plnWinMoves) (getNextMove $board $winningPlan)))
                         ;  (let $drawPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board Draw) 800 300 800)
                          (let $drawPlan (BC.drive &belief Draw $board (S (S (S (S (S (S (S (S Z)))))))))
                               (if (!= $drawPlan ())
-                                  (let $_ (println! (DrawPlan Found: $drawPlan))
+                                  (let $__28 (println! (DrawPlan Found: $drawPlan))
                                       (let $dpr (increment &plnWinMoves) (getNextMove $board $drawPlan)))
                                   ; (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
                                   (let $commonPlan (BC.drive &belief (Board $row $rows) $board (S (S (S (S (S (S (S (S Z)))))))))
@@ -135,21 +135,21 @@
                                           (let $cpr (increment &plnCommonMoves) (getNextMove $board $commonPlan))
                                           ()))))))
                                         
-          ($_ (println! (NextMove: $nextMove)))
+          ($__29 (println! (NextMove: $nextMove)))
           ($gpMove (if (== $nextMove ())
                        (let $atoms (runGp $board $player) (BestCandidate ThompsonRank () $atoms))
                        $nextMove))
-          ($_ (println! (gp move $gpMove)))
+          ($__30 (println! (gp move $gpMove)))
           ((Sentence (($link $currentBoard $nextBoard) $stv) $id) $gpMove)
           ($tmr (increment &totalMoves))
 
-          ;; ($_ (println! (if (!= $nextMove ()) (Pln Found move $nextMove) (GP Found move $gpMove))))
-          ;; ($_ (println! (GpMove: $gpMove)))
-          ;; ($_ (println! (NextBoard: $nextBoard)))
-          ($_ (add-atom &perception (Implication $board $nextBoard)))
-          ($_ (add-atom &newPerceptions (Implication $board $nextBoard)))
-          ($_ (add-atom &perception $nextBoard))
-          ($_ (add-atom &newPerceptions $nextBoard))
+          ;; ($__31 (println! (if (!= $nextMove ()) (Pln Found move $nextMove) (GP Found move $gpMove))))
+          ;; ($__32 (println! (GpMove: $gpMove)))
+          ;; ($__33 (println! (NextBoard: $nextBoard)))
+          ($__34 (add-atom &perception (Implication $board $nextBoard)))
+          ($__35 (add-atom &newPerceptions (Implication $board $nextBoard)))
+          ($__36 (add-atom &perception $nextBoard))
+          ($__37 (add-atom &newPerceptions $nextBoard))
         )
         $nextBoard))
 
@@ -170,7 +170,7 @@
           (
             (Human (let*
                       (
-                        ($_ (println! (Make your move: <e.g> 0 - 8)))
+                        ($__38 (println! (Make your move: <e.g> 0 - 8)))
                         ($input (readln!))
                         ($validMove (py-call (run_evolution.is_valid $currentState $input)))
                       )
@@ -210,8 +210,8 @@
 (= (saveBeliefs ($newBeliefs $oldBeliefs))
    (let*
      (
-       ;; ($_ (println! (Inside SaveBelief)))
-       ;; ($_ (println! (NewBeliefs: $newBeliefs)))
+       ;; ($__39 (println! (Inside SaveBelief)))
+       ;; ($__40 (println! (NewBeliefs: $newBeliefs)))
        ($ro (py-call (utils.remove_from_file "WM/belief.metta" $oldBeliefs)))
        ($rn (saveExpressions "WM/belief.metta" $newBeliefs))
      )
@@ -225,7 +225,7 @@
           ($content (let $strs (collapse (superpose (
                                                 (py-call (utils.to_metta_str (Count (get-state &count))))
                                                 (py-call (utils.to_metta_str (GameCount (+ 1 $gameCount))))))) (py-call (utils.join_metta_strs $strs))))
-          ;; ($_ (println! (CountContent: $content)))
+          ;; ($__41 (println! (CountContent: $content)))
           ($ra (py-call (utils.add_to_file "WM/state.metta" $content)))
       )
        true))
@@ -245,13 +245,13 @@
    (let*
         (
           ($initState (py-call (run_evolution.Board (Board (E E E E E E E E E)))))
-          ($_ (import! &perception ./WM/perception))
-          ($_ (import! &belief ./WM/permanent-belief))
-          ($_ (import! &belief ./WM/belief))
-          ($_ (import! &stateSpace ./WM/state))
+          ($__42 (import! &perception ./WM/perception))
+          ($__43 (import! &belief ./WM/permanent-belief))
+          ($__44 (import! &belief ./WM/belief))
+          ($__45 (import! &stateSpace ./WM/state))
           (($lastCount) (collapse (match &stateSpace (Count $x) $x)))
           ($__ (change-state! &count $lastCount))
-          ($_ (if (== $player X) true (drawBoard $initState)))
+          ($__46 (if (== $player X) true (drawBoard $initState)))
 
           ($pa (add-atom &perception (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E))))))
           ($npa (add-atom &newPerceptions (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E))))))
@@ -259,10 +259,10 @@
           ($winningState (gameLoop $adversary $initState $player (== $player X)))
           (($gameCount) (collapse (match &stateSpace (GameCount $x) $x)))
 
-          ;; ($_ (println! ""))
-          ;; ($_ (println! "BeforeBeliefUpdate:"))
+          ;; ($__47 (println! ""))
+          ;; ($__48 (println! "BeforeBeliefUpdate:"))
           ;; ($nothing (collapse (println! (get-atoms &belief))))
-          ;; ($_ (println! ""))
+          ;; ($__49 (println! ""))
 
           ;; Save the perception to file
           ($rp (savePerceptions))
@@ -270,10 +270,10 @@
           ;; Save the beliefs to file
           ($beliefs (populate-belief (collapse (get-atoms &perception))))
 
-          ;; ($_ (println! ""))
-          ;; ($_ (println! "AfterBeliefUpdate:"))
+          ;; ($__50 (println! ""))
+          ;; ($__51 (println! "AfterBeliefUpdate:"))
           ;; ($nothing (collapse (println! (get-atoms &belief))))
-          ;; ($_ (println! ""))
+          ;; ($__52 (println! ""))
 
           ($rb (saveBeliefs $beliefs))
           ($rc (saveCounts ($lastCount $gameCount)))
@@ -289,16 +289,16 @@
           (
             ($winner (py-call (run_evolution.check_winner $currentState)))
             ($winningState (GameWin $winner))
-            ($_ (println! (GameOver! Winner is: $winner)))
+            ($__53 (println! (GameOver! Winner is: $winner)))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
             ($nextCount (increment &count))
             ($exists (!= (collapse (match &belief
                                           (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev)
                                           (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev))) ()))
 
-            ;; ($_ (println! (Adding (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) ($nextCount)) into Belief)))
+            ;; ($__54 (println! (Adding (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) ($nextCount)) into Belief)))
 
-            ($_ (if $exists
+            ($__55 (if $exists
                     true
                     (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) ($nextCount)))))
           )
@@ -313,15 +313,15 @@
                                           (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9)) $Ev)
                                           (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev))) ()))
 
-            ($_ (add-atom &newPerceptions $mettaBoard))
-            ($_ (if $exists
+            ($__56 (add-atom &newPerceptions $mettaBoard))
+            ($__57 (if $exists
                     true
                     (add-atom &newBeliefs (Sentence ((Inheritance $mettaBoard Draw) (stv 0.9 0.9)) ($nextCount)))))
-            ($_ (println! (Game ended in draw))))
+            ($__58 (println! (Game ended in draw))))
           (GameWinner NoOne))
        (let*
           (
-            ;; ($_ (println! (Inside game loop myTurn: $myTurn)))
+            ;; ($__59 (println! (Inside game loop myTurn: $myTurn)))
             ($opponent (flipPlayer $player))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
             ($nextBoard (if $myTurn
@@ -334,15 +334,15 @@
                                                         ($nextState (py-call (run_evolution.make_move $currentState $move $opponent))))
                                                       (bloatBoard (load_board_metta $nextState))))
 
-                                 ($_ (add-atom &perception $nextMettaboard))
-                                 ($_ (add-atom &newPerceptions $nextMettaboard))
+                                 ($__60 (add-atom &perception $nextMettaboard))
+                                 ($__61 (add-atom &newPerceptions $nextMettaboard))
 
-                                 ($_ (add-atom &perception (Implication $mettaBoard $nextMettaboard)))
-                                 ($_ (add-atom &newPerceptions (Implication $mettaBoard $nextMettaboard)))
+                                 ($__62 (add-atom &perception (Implication $mettaBoard $nextMettaboard)))
+                                 ($__63 (add-atom &newPerceptions (Implication $mettaBoard $nextMettaboard)))
                                )
                                $nextState)))
             ($nextMettaBoard (bloatBoard (load_board_metta $nextBoard)))
-            ($_ (drawBoard $nextBoard))
+            ($__64 (drawBoard $nextBoard))
           )
           (gameLoop $adversary $nextBoard $player (not $myTurn))))))
 
