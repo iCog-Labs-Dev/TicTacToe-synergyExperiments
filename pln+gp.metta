@@ -117,10 +117,8 @@
           ;; ($__23 (println! (Before pln)))
           ($winningState (GameWin $player)) ;; TODO: Also handle draw states
           ; ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 800 300 800))
-          ($__24 (println! "Here"))
           ($__25 (println! (board $board)))
           ($winningPlan (BC.drive &belief $winningState $board (S (S (S (S (S (S (S (S Z))))))))))
-          ($__26 (println! (winning plansdsAD: $winningPlan)))
           ($nextMove (if (!= $winningPlan ())
                          (let $__27 (println! (WinningPlan Found: $winningPlan))
                               (let $wpr (incrementState &plnWinMoves) (getNextMove $board $winningPlan)))
