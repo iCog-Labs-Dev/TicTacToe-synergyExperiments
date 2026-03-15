@@ -91,8 +91,8 @@
 !(bind! &totalLoss (new-state 0))
 !(bind! &totalWins (new-state 0))
 
-!(bind! &activeMosesStrategy (new-state ...))
-!(bind! &stampState (new-state 1))
+; !(bind! &activeMosesStrategy (new-state ...))
+; !(bind! &stampState (new-state 0))
 
 (= (resetCounts)
    (let*
@@ -154,6 +154,7 @@
         ($_ (println! ($plnWinMovesPercent percent of the moves made by pln were winning move plans)))
         ($_ (println! (===================================================)))
         ($_ (println! ""))
+        ($_ (cut))
 
         ;; ($_ (py-call (run_evolution.restore_file "WM/perception.metta")))
         ;; ($_ (py-call (run_evolution.restore_file "WM/belief.metta")))
@@ -172,23 +173,23 @@
            ((GameWinner $winner) (initGameState $player $adversary))
            ($_ (if (!= $winner NoOne) (println! (Winner: (if (== $opponent $winner) Adversary PLN+GP))) true))
 
-           ($tgr (increment &totalGames))
+           ($tgr (incrementState &totalGames))
            ($ttl (if (== $winner $opponent)
-                     (increment &totalLoss)
+                     (incrementState &totalLoss)
                      (if (== $winner $player)
-                         (increment &totalWins)
+                         (incrementState &totalWins)
                          ())))
          )
          (runTest (- $n 1) $opponent $adversary))))
 
 ;; Training
-; !(testLearning 5 Random) ;; Should be 3
-; !(testLearning 7 GP6O) ;; Should be 5
-; !(testLearning 10 GP12X) ;; Should be 7
-; !(testLearning 15 MiniMax) ;; Should stay the same
+!(testLearning 5 Random) ;; Should be 3
+!(testLearning 7 GP6O) ;; Should be 5
+!(testLearning 10 GP12X) ;; Should be 7
+!(testLearning 15 MiniMax) ;; Should stay the same
 
-; ;; Test
-; !(testLearning 5 MiniMax)
+;; Test
+!(testLearning 5 MiniMax)
 
 ;; !(initGameState X Human)
 ;; !(testLearning 5 Random)
@@ -198,7 +199,18 @@
 ;; !(testLearning 5 GP12X)
 ;; !(testLearning 15 MiniMax)
 
-!(update-moses-strategy "Random")
+; !(let* (($osList (runMoses
+;                 2                              
+;                 (mkCscore 5.0 5 1.43 0.0 3.57) 
+;                 3                              
+;                 (emptyStrategyMetaPop)              
+;                 0 1                            
+;                 (5 random-player 3.5)            
+;                 hillClimbing                   
+;                 30 5 2 1.0                     
+;                 5 0.004 1000))
+;                 ($ex (preOrder (getExemplarTree (OS.getByIdx 0 $osList))))
+;                 ) 
+;                 $ex)
 
-!(let $board (bloatBoard (Board (E E E E E E E E E)))
-         (moses-player-exec $board X))
+; !(strategyMetaPop)

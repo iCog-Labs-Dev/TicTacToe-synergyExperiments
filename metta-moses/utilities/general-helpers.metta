@@ -233,7 +233,7 @@
 
 ;;
 ; ;; Add numbers in an atom list
-(= (sum $list) (foldl-atom $list 0 $acc $x (+ $acc $x)))
+; (= (sum $list) (foldl-atom $list 0 $acc $x (+ $acc $x)))
 
 ;; Function to count atom occrence in a list of atoms.
 (= (count $t $list)(let $r (filter-atom $list $x (== $x $t)) (length $r)))
@@ -288,29 +288,29 @@
 ;        (Error Unit Or Symbol cannot be deconstructed)))
 
 ;; Function to create a tuple of tuples given two equal length list of atoms. ;; FIX: No longer working on version 0.2.3
-(= (zip $a $b)
-   (if (or (hasOneAtom $a) (hasOneAtom $b))
-       (((car-atom $a) (car-atom $b)))
-       (let*
-          (
-            (($x $xs) (decons $a))
-            (($y $ys) (decons $b))
-            ($rest (zip $xs $ys))
-          )
-          (cons-atom ($x $y) $rest)))
-)
+; (= (zip $a $b)
+;    (if (or (hasOneAtom $a) (hasOneAtom $b))
+;        (((car-atom $a) (car-atom $b)))
+;        (let*
+;           (
+;             (($x $xs) (decons $a))
+;             (($y $ys) (decons $b))
+;             ($rest (zip $xs $ys))
+;           )
+;           (cons-atom ($x $y) $rest)))
+; )
 
 ;; Similar to zip but instead of just creating a tuple of atoms,
 ;;  it performes an operation of $f on them and returns the resulting list of atoms.
 ;; (: zipWith (-> (-> $a $b $c) $d $e $f))
-(= (zipWith $f $xs $ys)
-   (if (== $xs ())                      ; We assume (arity $xs) == (arity $ys)
-       ()
-       (let* ((($xs-hd $xs-tl) (decons $xs))
-              (($ys-hd $ys-tl) (decons $ys))
-              ($head ($f $xs-hd $ys-hd))
-              ($tail (zipWith $f $xs-tl $ys-tl)))
-         (cons-atom $head $tail))))
+; (= (zipWith $f $xs $ys)
+;    (if (== $xs ())                      ; We assume (arity $xs) == (arity $ys)
+;        ()
+;        (let* ((($xs-hd $xs-tl) (decons $xs))
+;               (($ys-hd $ys-tl) (decons $ys))
+;               ($head ($f $xs-hd $ys-hd))
+;               ($tail (zipWith $f $xs-tl $ys-tl)))
+;          (cons-atom $head $tail))))
 
 ;; Finds length of a tuple ;; FIX: No longer working on version 0.2.3
 (= (len $expr)
@@ -386,8 +386,8 @@
 )
 
 ;; Function to empty a space with contents.
-(= (clearSpace $space)
-   (collapse (let $content (get-atoms $space) (remove-atom $space $content))))
+; (= (clearSpace $space)
+;    (collapse (let $content (get-atoms $space) (remove-atom $space $content))))
    
 ;; Function that merges two sorted lists while keeping them sorted.
 (= (merge $xs $ys) (merge $xs $ys <=))
@@ -443,19 +443,19 @@
 
 ;; function to partially sort the smallest $n Atoms from an expression
 ; (: selectionSort (-> Expression Number Expression))
-(= (selectionSort $list $n) (selectionSort $list $n <))
-; (: selectionSort (-> Expression Number (-> $a $a Bool) Expression))
-(= (selectionSort $list $n $op)
-    (if (or (== $n 0) (== $list ()))
-        $list
-     (let* (
-        ($initial (car-atom $list))
-        ($cur (selector $list $initial $op))
-        ($newList (subtraction-atom $list ($cur))) ;since the subtractionAtom (the custom one) isn't working now but this subtraction-atom does same thing.
-        ($rest (selectionSort $newList (- $n 1) $op))
-    )
-    (cons-atom $cur $rest)
-    )))
+; (= (selectionSort $list $n) (selectionSort $list $n <))
+; ; (: selectionSort (-> Expression Number (-> $a $a Bool) Expression))
+; (= (selectionSort $list $n $op)
+;     (if (or (== $n 0) (== $list ()))
+;         $list
+;      (let* (
+;         ($initial (car-atom $list))
+;         ($cur (selector $list $initial $op))
+;         ($newList (subtraction-atom $list ($cur))) ;since the subtractionAtom (the custom one) isn't working now but this subtraction-atom does same thing.
+;         ($rest (selectionSort $newList (- $n 1) $op))
+;     )
+;     (cons-atom $cur $rest)
+;     )))
 
 ;; Helper function that compare two Atoms based on $op and return the one
 ;;  (: comparator (-> $a $a (-> $a $a Bool) $a))
@@ -759,7 +759,7 @@
 ; (: compose (-> (-> $b $c) (-> $a $b) (-> $a $c)))
 ; The previous `compose` definition  extra parentheses, which caused parsing issues during PeTTa-to-Prolog translation.
 ; After removing them, the function now works smoothly and remains compatible with previous calling styles.
-(= (compose $g $f $x)($g ($f $x)))
+; (= (compose $g $f $x)($g ($f $x)))
 
 ;; approximate equality -- takes the relative magnitude of the numbers into consideration
 
@@ -1186,7 +1186,7 @@
 
 ;; It will increment the input by 1.
 ; (: increment (-> Number Number))
-(= (increment $x) (+ $x 1))
+; (= (increment $x) (+ $x 1))
 
 ;; A function that turns every atom to unit
 (: transformToUnit (-> Atom Atom))

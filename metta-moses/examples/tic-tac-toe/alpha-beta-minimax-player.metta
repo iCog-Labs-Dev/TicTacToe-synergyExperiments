@@ -12,37 +12,37 @@
      (replace-by-index $bs $player $best-idx)))
 
 ;; Root Loop with EARLY EXIT
-(= (find-best-move-loop $bs $candidates $best-score $best-move $alpha $beta $player $opponent)
-   (if (== $candidates ())
-       $best-move
-       (let* ((($curr-idx $rest-candidates) (decons-atom $candidates))
-              ($new-bs (replace-by-index $bs $player $curr-idx))
-              ($immediate-score (evaluate-board $new-bs $player $opponent)))
+; (= (find-best-move-loop $bs $candidates $best-score $best-move $alpha $beta $player $opponent)
+;    (if (== $candidates ())
+;        $best-move
+;        (let* ((($curr-idx $rest-candidates) (decons-atom $candidates))
+;               ($new-bs (replace-by-index $bs $player $curr-idx))
+;               ($immediate-score (evaluate-board $new-bs $player $opponent)))
          
-         ;; EARLY EXIT: If we found a winning move (10), take it and STOP.
-         (if (== $immediate-score 10)
-             $curr-idx
-             ;; Standard Update
-	     (let $score (minimax $new-bs False $alpha $beta $player $opponent)
-             (if (> $score $best-score)
-                 (let $new-alpha (max $alpha $score)
-                      (find-best-move-loop $bs $rest-candidates $score $curr-idx $new-alpha $beta $player $opponent))
-                 (find-best-move-loop $bs $rest-candidates $best-score $best-move $alpha $beta $player $opponent)))))))
+;          ;; EARLY EXIT: If we found a winning move (10), take it and STOP.
+;          (if (== $immediate-score 10)
+;              $curr-idx
+;              ;; Standard Update
+; 	     (let $score (minimax $new-bs False $alpha $beta $player $opponent)
+;              (if (> $score $best-score)
+;                  (let $new-alpha (max $alpha $score)
+;                       (find-best-move-loop $bs $rest-candidates $score $curr-idx $new-alpha $beta $player $opponent))
+;                  (find-best-move-loop $bs $rest-candidates $best-score $best-move $alpha $beta $player $opponent)))))))
 
 ;; ---------------------------------------------------------
 ;; CORE MINIMAX (Alpha-Beta)
 ;; ---------------------------------------------------------
 
-(= (minimax $bs $isMax $alpha $beta $player $opponent)
-   (let $score (evaluate-board $bs $player $opponent)
-     (if (not (== $score 0))
-         $score
-         (let $empty-cells (get-empty-cells $bs () 0)
-            (if (== $empty-cells ())
-                0
-                (if $isMax
-                    (run-max-loop $bs $empty-cells -1000 $alpha $beta $player $opponent)
-                    (run-min-loop $bs $empty-cells 1000 $alpha $beta $player $opponent)))))))
+; (= (minimax $bs $isMax $alpha $beta $player $opponent)
+;    (let $score (evaluate-board $bs $player $opponent)
+;      (if (not (== $score 0))
+;          $score
+;          (let $empty-cells (get-empty-cells $bs () 0)
+;             (if (== $empty-cells ())
+;                 0
+;                 (if $isMax
+;                     (run-max-loop $bs $empty-cells -1000 $alpha $beta $player $opponent)
+;                     (run-min-loop $bs $empty-cells 1000 $alpha $beta $player $opponent)))))))
 
 ;; Maximizer Loop
 (= (run-max-loop $bs $candidates $best-val $alpha $beta $player $opponent)

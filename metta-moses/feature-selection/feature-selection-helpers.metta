@@ -422,9 +422,9 @@
 ;; Utility function to constrain a value within bounds [min, max]
 ;; Example: (clamp 1.5 0.0 1.0) -> 1.0, (clamp -0.5 0.0 1.0) -> 0.0
 ; (: clamp (-> Number Number Number Number))
-(= (clamp $val $min $max)
-   (if (< $val $min) $min
-       (if (> $val $max) $max $val)))
+; (= (clamp $val $min $max)
+;    (if (< $val $min) $min
+;        (if (> $val $max) $max $val)))
 
 
 ;; Calculate confidence weighting factor based on feature set size

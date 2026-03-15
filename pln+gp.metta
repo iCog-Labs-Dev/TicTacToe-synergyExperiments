@@ -28,8 +28,8 @@
             (stv (if (> $s 1) 1 $s) (py-call (round (/ $N (+ $N (K))) 4))))
           )
 
-(= (increment $state) (let $n (get-state $state) (let $__2 (change-state! $state (+ $n 1)) (get-state $state))))
-(= (update-atom $space $old $new) (match $space $old (let $__3 (remove-atom $space $old) (add-atom $space $new))))
+(= (incrementState $state) (let $n (get-state $state) (let $__2 (change-state! $state (+ $n 1)) (get-state $state))))
+(= (update-atoms $space $old $new) (match $space $old (let $__3 (remove-atom $space $old) (add-atom $space $new))))
 
 (= (populate-belief $atoms)
    (let*
@@ -43,7 +43,7 @@
                  (($percept $stvN) (superpose $updatedPerceptTruthPair))
                  ((Sentence ($percept $stv) $Ev) (superpose $oldBeliefs))
                  ((Sentence ($percept $stvU) $Ev) (BestCandidate PriorityRank () (collapse (|- ($percept $stv) ($percept $stvN)))))
-                 ($__5 (update-atom &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stvU) $Ev)))
+                 ($__5 (update-atoms &belief (Sentence ($percept $stv) $Ev) (Sentence ($percept $stvU) $Ev)))
                )
                $percept)))
         ($uniqueRevisedPercepts (unique-atom $revisedPercepts))
@@ -54,7 +54,7 @@
                                  (
                                    ($percept (superpose $newPercepts))
                                    (($percept $stvN) (superpose $updatedPerceptTruthPair))
-                                   ($i (increment &count))
+                                   ($i (incrementState &count))
                                  )
                                  (Sentence ($percept $stvN) ($i)))))
         ($injectedBeliefs (collapse (get-atoms &newBeliefs)))
@@ -123,16 +123,16 @@
           ($__26 (println! (winning plansdsAD: $winningPlan)))
           ($nextMove (if (!= $winningPlan ())
                          (let $__27 (println! (WinningPlan Found: $winningPlan))
-                              (let $wpr (increment &plnWinMoves) (getNextMove $board $winningPlan)))
+                              (let $wpr (incrementState &plnWinMoves) (getNextMove $board $winningPlan)))
                         ;  (let $drawPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board Draw) 800 300 800)
                          (let $drawPlan (BC.drive &belief Draw $board (S (S (S (S (S (S (S (S Z)))))))))
                               (if (!= $drawPlan ())
                                   (let $__28 (println! (DrawPlan Found: $drawPlan))
-                                      (let $dpr (increment &plnWinMoves) (getNextMove $board $drawPlan)))
+                                      (let $dpr (incrementState &plnWinMoves) (getNextMove $board $drawPlan)))
                                   ; (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
                                   (let $commonPlan (BC.drive &belief (Board $row $rows) $board (S (S (S (S (S (S (S (S Z)))))))))
                                       (if (!= $commonPlan ())
-                                          (let $cpr (increment &plnCommonMoves) (getNextMove $board $commonPlan))
+                                          (let $cpr (incrementState &plnCommonMoves) (getNextMove $board $commonPlan))
                                           ()))))))
                                         
           ($__29 (println! (NextMove: $nextMove)))
@@ -141,7 +141,7 @@
                        $nextMove))
           ($__30 (println! (gp move $gpMove)))
           ((Sentence (($link $currentBoard $nextBoard) $stv) $id) $gpMove)
-          ($tmr (increment &totalMoves))
+          ($tmr (incrementState &totalMoves))
 
           ;; ($__31 (println! (if (!= $nextMove ()) (Pln Found move $nextMove) (GP Found move $gpMove))))
           ;; ($__32 (println! (GpMove: $gpMove)))
@@ -291,7 +291,7 @@
             ($winningState (GameWin $winner))
             ($__53 (println! (GameOver! Winner is: $winner)))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
-            ($nextCount (increment &count))
+            ($nextCount (incrementState &count))
             ($exists (!= (collapse (match &belief
                                           (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev)
                                           (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9 0.9)) $Ev))) ()))
@@ -307,7 +307,7 @@
    (if (boardFull $currentState)
        (let*
           (
-            ($nextCount (increment &count))
+            ($nextCount (incrementState &count))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
             ($exists (!= (collapse (match &belief
                                           (Sentence ((Inheritance $mettaBoard $winningState) (stv 0.9)) $Ev)

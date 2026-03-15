@@ -77,7 +77,7 @@
 !(bind! &stampState (new-state 0))
 
 ;; moved increment def here for testing
-(= (incrementState $state) (let $n (get-state $state) (let $__2 (change-state! $state (+ $n 1)) (get-state $state))))
+; (= (incrementState $state) (let $n (get-state $state) (let $__2 (change-state! $state (+ $n 1)) (get-state $state))))
 
 ;; Empty strategy metapop -  empty PRIORITIZED-OR with worst CScore
 ;; this empty strategy is used as a starting point to evolve better strategy
@@ -103,8 +103,9 @@
                             ;  ($_ random-player)
                              ))) ;; default and Human fallback
           ;; Target perfect win score
+          ($__ (println! (opponent policy $opponentPolicy)))
           ($targetScore (mkCscore 5.0 5 1.43 0.0 3.57)) 
-
+          ($__ (println! "After target score"))
           ;; Run Moses to find best strategy
           ($mosesResult (runMoses
                 2                              ;; maxGen
@@ -118,6 +119,7 @@
                 5 0.004 1000))                 ;; nToKeep, capCoef, genCount
           
           ;; Extract top exemplar tree
+          ($__ (println! "After runMoses"))
           ($topExemplar (eval (OS.getByIdx 0 $mosesResult)))
           ($tree (eval (getExemplarTree $topExemplar)))
           ;; Clean tree (remove mkTree/mkNode wrappers native to S-expression)
@@ -181,8 +183,8 @@
        (mkBScore (Cons 2.0 Nil)))
      NilOS))
 
-; !(let $osList (runMoses
-;                 1                              
+; !(let* (($osList (runMoses
+;                 2                              
 ;                 (mkCscore 5.0 5 1.43 0.0 3.57) 
 ;                 3                              
 ;                 (emptyStrategyMetaPop)              
@@ -190,22 +192,21 @@
 ;                 (5 random-player 3.5)            
 ;                 hillClimbing                   
 ;                 30 5 2 1.0                     
-;                 5 0.004 1000) (preOrder (getExemplarTree (OS.getByIdx 0 $osList))))
-;                 ; (let $exemplar (OS.getByIdx 0 $osList) (preOrder $exemplar)))
+;                 5 0.004 1000))
+;                 ($ex (preOrder (getExemplarTree (OS.getByIdx 0 $osList))))
+;                 ) 
+;                 $ex)
+                ; (let $exemplar (OS.getByIdx 0 $osList) (preOrder $exemplar)))
 
 
 ; with strategyMetaPop (ConsOS (mkExemplar (mkTree (mkNode PRIORITIZED-OR) (Cons (mkTree (mkNode playwin) Nil) (Cons (mkTree (mkNode playblock) Nil) (Cons (mkTree (mkNode PRIORITIZED-OR) (Cons (mkTree (mkNode playcenter) Nil) (Cons (mkTree (mkNode playwin) Nil) (Cons (mkTree (mkNode playside) Nil) Nil)))) Nil)))) (mkDemeId 1) (mkCscore 5.0 5 1.4285714285714284 0.0 3.5714285714285716) (mkBScore (Cons 1.0 (Cons 1.0 (Cons 1.0 (Cons 1.0 (Cons 1.0 Nil))))))) (ConsOS (mkExemplar (mkTree (mkNode PRIORITIZED-OR) (Cons (mkTree (mkNode playwin) Nil) (Cons (mkTree (mkNode playblock) Nil) Nil))) (mkDemeId 0) (mkCscore 2.0 2 0.57 0.0 1.43) (mkBScore (Cons 2.0 Nil))) NilOS))
 
 ; with emptyStrategyMetaPop (ConsOS (mkExemplar (mkTree (mkNode PRIORITIZED-OR) (Cons (mkTree (mkNode PRIORITIZED-OR) (Cons (mkTree (mkNode playwin) Nil) (Cons (mkTree (mkNode playside) Nil) (Cons (mkTree (mkNode playcorner) Nil) Nil)))) (Cons (mkTree (mkNode PRIORITIZED-OR) (Cons (mkTree (mkNode playcenter) Nil) (Cons (mkTree (mkNode playwin) Nil) (Cons (mkTree (mkNode playside) Nil) Nil)))) Nil))) (mkDemeId 1) (mkCscore 5.0 6 1.7142857142857142 0.0 3.2857142857142856) (mkBScore (Cons 1.0 (Cons 1.0 (Cons 1.0 (Cons 1.0 (Cons 1.0 Nil))))))) (ConsOS (mkExemplar (mkTree (mkNode PRIORITIZED-OR) Nil) (mkDemeId 0) (mkCscore -10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 0 0.0 0.0 -10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000) (mkBScore (Cons -1.0e+04 Nil))) NilOS))
 
-!(update-moses-strategy "Random")
-; !(get-state activeMosesStrategy) ;; (PRIORITIZED-OR (PRIORITIZED-OR playwin playside playcorner) (PRIORITIZED-OR playcenter playwin playside))
+; !(update-moses-strategy "Random")
+; !(get-state &activeMosesStrategy) ;; (PRIORITIZED-OR (PRIORITIZED-OR playwin playside playcorner) (PRIORITIZED-OR playcenter playwin playside))
 
-; !(update-moses-strategy "MiniMax")
-; !(get-state activeMosesStrategy) ;; (PRIORITIZED-OR (PRIORITIZED-OR playcenter playwin playblock) (PRIORITIZED-OR playcenter playside playcorner))
+; ; !(update-moses-strategy "MiniMax")
+; ; !(get-state &activeMosesStrategy) ;; (PRIORITIZED-OR (PRIORITIZED-OR playcenter playwin playblock) (PRIORITIZED-OR playcenter playside playcorner))
 
-!(let $board (bloatBoard (Board (E E E E E E E E E))) (moses-player-exec $board X))
-
-; (PRIORITIZED-OR (PRIORITIZED-OR playwin playside playcorner) (PRIORITIZED-OR playcenter playwin playside))
-
-; !(moses-player (PRIORITIZED-OR (PRIORITIZED-OR playwin playside playcorner) (PRIORITIZED-OR playcenter playwin playside)) (E E E E E E E E E) X)
+; !(let $board (bloatBoard (Board (E E E E E E E E E))) (moses-player-exec $board X))
