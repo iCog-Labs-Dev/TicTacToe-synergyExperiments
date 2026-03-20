@@ -478,16 +478,16 @@
 
 ; ;; Test cases -- selectionSort
 !(println! ("testing selectionSort "))
-!(assertEqual (selectionSort (4 1 9 2 8 3 25 2 9 73) 2 <) (1 2 4 9 8 3 25 2 9 73))
-!(assertEqual (selectionSort (5 2 9 1 73 2 3 9 8 34 25) 3 >) (73 34 25 5 2 9 1 2 3 9 8))
-!(assertEqual (selectionSort (1 73 2 3 1 9 8 34 1 25 1) 4 <) (1 1 1 1 73 2 3 9 8 34 25))
-!(assertEqual (selectionSort () 2 >) ())
-!(assertEqual (selectionSort (1 2 3) 4 >) (3 2 1))
+!(assertEqual (selectionSorts (4 1 9 2 8 3 25 2 9 73) 2 <) (1 2 4 9 8 3 25 2 9 73))
+!(assertEqual (selectionSorts (5 2 9 1 73 2 3 9 8 34 25) 3 >) (73 34 25 5 2 9 1 2 3 9 8))
+!(assertEqual (selectionSorts (1 73 2 3 1 9 8 34 1 25 1) 4 <) (1 1 1 1 73 2 3 9 8 34 25))
+!(assertEqual (selectionSorts () 2 >) ())
+!(assertEqual (selectionSorts (1 2 3) 4 >) (3 2 1))
 
 ;; Test cases -- selectionSort with non numeric expressions
 !(println! ("Test cases -- selectionSort with non numeric expressions"))
-!(assertEqual (selectionSort ((a b) (a b c) (d) (m o s e s)) 1 bySize) ((m o s e s) (a b) (a b c) (d)))
-!(assertEqual (selectionSort ((a 1) (b 2) (d 10) (l 8)) 2 bySecondAtom) ((d 10) (l 8) (a 1) (b 2)))
+!(assertEqual (selectionSorts ((a b) (a b c) (d) (m o s e s)) 1 bySize) ((m o s e s) (a b) (a b c) (d)))
+!(assertEqual (selectionSorts ((a 1) (b 2) (d 10) (l 8)) 2 bySecondAtom) ((d 10) (l 8) (a 1) (b 2)))
 
 ; ;; Test cases --  selector
 !(println! ("testing selector "))

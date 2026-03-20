@@ -72,7 +72,7 @@
             (let*
                 (
                     ;; Sort by counter to find least recently used (oldest)
-                    ($sortedEntries (selectionSort $allCacheEntries (size-atom $allCacheEntries) ltByLastAtom))
+                    ($sortedEntries (selectionSorts $allCacheEntries (size-atom $allCacheEntries) ltByLastAtom))
                     ;; Extract least recently used entry details
                     ((cacheEntry $functionName $args $result $entryCounter) (index-atom $sortedEntries 0))
                     ;; Remove the least recently used cacheEntry
