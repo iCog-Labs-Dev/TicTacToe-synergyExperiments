@@ -1,6 +1,7 @@
 ;; Helper functions that are going to be useful for writing any metta code
 !(bind! perf_counter (new-state (py-call "time.perf_counter")))
-!(py-call (random.seed 0))
+;; this might be the culprit that prevents the results from being random in the game setup
+; !(py-call (random.seed 0))
 
 (= (round $x)(py-call ("round" $x)))    ;; python method calling is py-call unlike py-atom in mettalog 
 
@@ -443,19 +444,19 @@
 
 ;; function to partially sort the smallest $n Atoms from an expression
 ; (: selectionSort (-> Expression Number Expression))
-; (= (selectionSort $list $n) (selectionSort $list $n <))
-; ; (: selectionSort (-> Expression Number (-> $a $a Bool) Expression))
-; (= (selectionSort $list $n $op)
-;     (if (or (== $n 0) (== $list ()))
-;         $list
-;      (let* (
-;         ($initial (car-atom $list))
-;         ($cur (selector $list $initial $op))
-;         ($newList (subtraction-atom $list ($cur))) ;since the subtractionAtom (the custom one) isn't working now but this subtraction-atom does same thing.
-;         ($rest (selectionSort $newList (- $n 1) $op))
-;     )
-;     (cons-atom $cur $rest)
-;     )))
+(= (selectionSorts $list $n) (selectionSorts $list $n <))
+; (: selectionSort (-> Expression Number (-> $a $a Bool) Expression))
+(= (selectionSorts $list $n $op)
+    (if (or (== $n 0) (== $list ()))
+        $list
+     (let* (
+        ($initial (car-atom $list))
+        ($cur (selector $list $initial $op))
+        ($newList (subtraction-atom $list ($cur))) ;since the subtractionAtom (the custom one) isn't working now but this subtraction-atom does same thing.
+        ($rest (selectionSorts $newList (- $n 1) $op))
+    )
+    (cons-atom $cur $rest)
+    )))
 
 ;; Helper function that compare two Atoms based on $op and return the one
 ;;  (: comparator (-> $a $a (-> $a $a Bool) $a))
