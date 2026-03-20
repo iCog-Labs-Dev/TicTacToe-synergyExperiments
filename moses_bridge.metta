@@ -29,9 +29,9 @@
 
 !(import! &self ./metta-moses/scoring/strategy-score-cache)
 !(import! &self ./metta-moses/examples/tic-tac-toe/tic-tac-toe-helpers)
-!(import! &self ./metta-moses/examples/tic-tac-toe/random-player)
+!(import! &self ./metta-moses/examples/tic-tac-toe/random-player-m)
 !(import! &self ./metta-moses/examples/tic-tac-toe/strategy-scoring)
-!(import! &self ./metta-moses/examples/tic-tac-toe/minimax-player)
+!(import! &self ./metta-moses/examples/tic-tac-toe/minimax-player-m)
 !(import! &self ./metta-moses/examples/tic-tac-toe/game-engine)
 !(import! &self ./metta-moses/examples/tic-tac-toe/moves)
 !(import! &self ./metta-moses/examples/tic-tac-toe/moses-player)
@@ -71,7 +71,7 @@
 !(import! &self ./metta-moses/reduct/boolean-reduct/one-constraint-subsumption)
 !(import! &self ./metta-moses/reduct/boolean-reduct/promote-common-constraints)
 !(import! &self ./metta-moses/reduct/boolean-reduct/reduce-to-elegance)
-!(import! &self ./utils)
+; !(import! &self ./utils)
 
 !(bind! &activeMosesStrategy (new-state .....))
 !(bind! &stampState (new-state 0))
