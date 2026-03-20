@@ -7,7 +7,7 @@
 ;                     (get-empty-cells $t $carry (+ $counter 1)))
 ;                 (get-empty-cells $t $acc (+ $counter 1))))))
 
-; (=  (replace-by-index $bs $icon $index)
+; (= (replace-by-index $bs $icon $index)
 ;     (let $len (size-atom $bs)
 ;         (if (>= $index $len)
 ;             $bs
@@ -17,15 +17,15 @@
 ;                     (let $rest (replace-by-index $t $icon (- $index 1))
 ;                         (cons-atom $h $rest)))))))
 ;; all the winning states encoded as patterns             
-(= (winning-states) ((($x $x $x $a $b $c $d $e $f) $x) 
-                    (($a $b $c $x $x $x $d $e $f) $x)
-                    (($a $b $c $d $e $f $x $x $x) $x) 
-                    (($x $a $b $x $c $d $x $e $f) $x)
-                    (($a $x $b $c $x $d $e $x $f) $x)
-                    (($a $b $x $c $d $x $e $f $x) $x)
-                    (($x $a $b $c $x $d $e $f $x) $x)
-                    (($a $b $x $c $x $d $x $e $f) $x)
-                )) 
+; (= (winning-states) ((($x $x $x $a $b $c $d $e $f) $x) 
+;                     (($a $b $c $x $x $x $d $e $f) $x)
+;                     (($a $b $c $d $e $f $x $x $x) $x) 
+;                     (($x $a $b $x $c $d $x $e $f) $x)
+;                     (($a $x $b $c $x $d $e $x $f) $x)
+;                     (($a $b $x $c $d $x $e $f $x) $x)
+;                     (($x $a $b $c $x $d $e $f $x) $x)
+;                     (($a $b $x $c $x $d $x $e $f) $x)
+;                 )) 
 
 ; (= (get-winner $board) 
 ;     (let $states (winning-states) 
