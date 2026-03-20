@@ -135,7 +135,7 @@
     (let* (
       ($expr (sInstSetToExpr $set))
       ($n (size-atom $expr))
-      ($sortedExpr (selectionSort $expr $n sInstComparator))
+      ($sortedExpr (eval (selectionSorts $expr $n sInstComparator)))
     )
       (exprToSInstSet $sortedExpr)))
 
