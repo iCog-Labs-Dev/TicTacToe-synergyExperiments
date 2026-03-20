@@ -71,7 +71,7 @@
 (= (List.sort (Cons $head $tail) $op)
     (let* (($expr (List.listToExpr  (Cons $head $tail)))
             ($n (size-atom $expr))
-           ($sortedExpr (eval (selectionSort $expr $n $op)))
+           ($sortedExpr (eval (selectionSorts $expr $n $op)))
            ($sortedList (eval (exprToList $sortedExpr))))
         $sortedList)
 )
