@@ -125,6 +125,8 @@
         ;; ($_ (py-call (run_evolution.backup_file "WM/state.metta")))
         ($_ (resetCounts))
 
+        ;; the MOSES evolution goes here
+        ($_ (update-moses-strategy $adversary))
         ($_ (runTest $n X $adversary))
 
         ;; Collected states
@@ -183,13 +185,13 @@
          (runTest (- $n 1) $opponent $adversary))))
 
 ;; Training
-!(testLearning 5 Random) ;; Should be 3
+; !(testLearning 5 Random) ;; Should be 3
 !(testLearning 7 GP6O) ;; Should be 5
 !(testLearning 10 GP12X) ;; Should be 7
-!(testLearning 15 MiniMax) ;; Should stay the same
+; !(testLearning 15 MiniMax) ;; Should stay the same
 
-;; Test
-!(testLearning 5 MiniMax)
+; ;; Test
+; !(testLearning 5 MiniMax)
 
 ;; !(initGameState X Human)
 ;; !(testLearning 5 Random)
@@ -205,7 +207,7 @@
 ;                 3                              
 ;                 (emptyStrategyMetaPop)              
 ;                 0 1                            
-;                 (5 random-player 3.5)            
+;                 (5 random-player-m 3.5)            
 ;                 hillClimbing                   
 ;                 30 5 2 1.0                     
 ;                 5 0.004 1000))
@@ -214,3 +216,17 @@
 ;                 $ex)
 
 ; !(strategyMetaPop)
+; !(replace-by-index (E E E E E E E E E) X 8)
+; !(get-winner (E E E E E E O O O))
+; !(get-empty-cells (E E E X O E E) () 0)
+; ; !(evaluate-board (E E E X O E E) X O)
+; !(is-gamever (is-game-over (X X E E E X E O O)))
+
+; !(match &self (= (check-line $x $b) $body) $body)
+; !(match &self (= (selectionSort $a $b $c) $body) $body)
+; !(get-state &activeMosesStrategy)
+
+; !(match &self (= (moses-player-exec $bloated-board $player) $body) $body)
+
+; !(match &self (= (run-minimax-loop $bs $candidates $best-val $isMax $player $opponent) $body) $body)
+; !(match &self (= (minimax $bs $isMax $player $opponent) $body) $body)
