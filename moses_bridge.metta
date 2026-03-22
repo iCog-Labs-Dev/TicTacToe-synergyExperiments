@@ -96,10 +96,10 @@
           ($nGames 5)
           ;; Map Python Game GP Adversary string to MOSES strategy policy component
           ($opponentPolicy (case $adversary
-                            (("MiniMax" minimax-player)
-                             ("Random" random-player)
-                            ;  ("GP12X" gpPlayer12)
-                            ;  ("GP6O" gpPlayer6)
+                            ((MiniMax minimax-player-m)
+                             (Random random-player-m)
+                            ;  (GP12X gpPlayer12-m)
+                            ;  (GP6O gpPlayer6-m)
                             ;  ($_ random-player)
                              ))) ;; default and Human fallback
           ;; Target perfect win score
