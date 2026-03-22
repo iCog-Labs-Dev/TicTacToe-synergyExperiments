@@ -137,7 +137,8 @@
                                         
           ($__29 (println! (NextMove: $nextMove)))
           ($gpMove (if (== $nextMove ())
-                       (let $atoms (runGp $board $player) (BestCandidate ThompsonRank () $atoms))
+                      ;  (let $atoms (runGp $board $player) (BestCandidate ThompsonRank () $atoms))
+                      (eval (moses-player-exec $board $player))
                        $nextMove))
           ($__30 (println! (gp move $gpMove)))
           ((Sentence (($link $currentBoard $nextBoard) $stv) $id) $gpMove)
