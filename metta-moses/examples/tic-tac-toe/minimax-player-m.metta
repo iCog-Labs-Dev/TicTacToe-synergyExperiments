@@ -9,16 +9,20 @@
         ($_ (println! (opponent $opponent)))
           ($empty-indices (get-empty-cells $bs () 0))
           ($_ (println! (emptty indicesss $empty-indices)))
-          ($best-idx (find-best-move-loop $bs $empty-indices -1000 -1 $player $opponent)))
+          ($_ (println! "moving to best move finder"))
+          ($best-idx (eval (find-best-move-loop $bs $empty-indices -1000 -1 $player $opponent)))
+          ($_ (println! (best index found $best-idx))))
      (replace-by-index $bs $player $best-idx)))
 
 ;; Loop through all empty indices to find the one with the highest Minimax score
 (= (find-best-move-loop $bs $candidates $best-score $best-move $player $opponent)
    (if (== $candidates ())
        $best-move
-       (let* ((($curr-idx $rest-candidates) (decons-atom $candidates))
+       (let* (
+        ; ($_ (println! "Evaluating board"))
+            (($curr-idx $rest-candidates) (decons-atom $candidates))
               ;; 1. Make the move temporarily
-              ($new-bs (replace-by-index $bs $player $curr-idx))
+              ($new-bs (eval (replace-by-index $bs $player $curr-idx)))
               ;; 2. Check if this move wins immediately
               ($immediate-score (evaluate-board $new-bs $player $opponent)))
          
@@ -26,7 +30,9 @@
          (if (== $immediate-score 10)
              $curr-idx
              ;; Otherwise, evaluate via minimax and continue
-             (let* (($score (minimax $new-bs False $player $opponent)))
+             (let* (
+                ; ($_ (println! "Calling minimax"))
+                ($score (eval (minimax $new-bs False $player $opponent))))
                ;; 4. Compare score. If better, update best-move.
                (if (> $score $best-score)
                    (find-best-move-loop $bs $rest-candidates $score $curr-idx $player $opponent)
