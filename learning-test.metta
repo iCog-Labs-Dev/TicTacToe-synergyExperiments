@@ -185,10 +185,10 @@
          (runTest (- $n 1) $opponent $adversary))))
 
 ;; Training
-; !(testLearning 5 Random) ;; Should be 3
-!(testLearning 7 GP6O) ;; Should be 5
-!(testLearning 10 GP12X) ;; Should be 7
-; !(testLearning 15 MiniMax) ;; Should stay the same
+!(testLearning 5 Random) ;; Should be 3
+; !(testLearning 7 GP6O) ;; Should be 5
+; !(testLearning 10 GP12X) ;; Should be 7
+!(testLearning 15 MiniMax) ;; Should stay the same
 
 ; ;; Test
 ; !(testLearning 5 MiniMax)
