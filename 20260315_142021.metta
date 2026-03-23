@@ -1,1 +1,0 @@
-(Loadable (Board (X O X O O O X O X)))

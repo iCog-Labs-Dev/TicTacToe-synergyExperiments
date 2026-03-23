@@ -104,31 +104,19 @@ def is_valid(board, move):
 
 
 def save_board(board: Board):
-    target_dir = "/Users/bitseat/KiraFiles/iCogLabs/moving-forward/TicTacToe-synergyExperiments/"
-    
-    # If your filename is just '20260311_172757.metta', this joins them safely
-    base_name = datetime.now().strftime('%Y%m%d_%H%M%S')
-    filename = f"{base_name}.metta"
-    absolute_filepath = os.path.join(target_dir, filename)
-
-    with open(absolute_filepath, "w") as f:
+    filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.metta"
+    with open(filename, "w") as f:
         f.write(f"(Loadable {board.to_linear_string()})")
-    # atexit.register(lambda: os.remove(absolute_filepath) if os.path.exists(absolute_filepath) else None)
-    return base_name
+    return filename
+
 
 def remove_file(filename: str):
     import os
 
-    if not filename.endswith('.metta'):
-        filename += '.metta'
-
-    target_dir = "/Users/bitseat/KiraFiles/iCogLabs/moving-forward/TicTacToe-synergyExperiments/"
-    absolute_filepath = os.path.join(target_dir, os.path.basename(filename))
-
-    if os.path.isfile(absolute_filepath):
-        os.remove(absolute_filepath)
+    if os.path.isfile(filename):
+        os.remove(filename)
     else:
-        print(f"{absolute_filepath} does not exist")
+        print(f"{filename} does not exist")
 
 
 class HammingScorer:
