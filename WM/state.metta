@@ -1,2 +1,2 @@
-(Count 6370)
-(GameCount 42)
+(Count 1969)
+(GameCount 17)
