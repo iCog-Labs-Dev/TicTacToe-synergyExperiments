@@ -24,3 +24,5 @@ This experiment explores the synergy between **PLN**, **Pattern Miner**, and **M
 
 ## Future Direction
 The integration enables a self-improving system where STVs converge over time to favor winning strategies and discard sub-optimal moves, demonstrating a functional pipeline for cross-component AI learning.
+
+_A detailed version of this can be found [here](docs/ImplementationDetails.md)_
