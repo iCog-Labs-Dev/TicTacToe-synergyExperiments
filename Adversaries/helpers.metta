@@ -7,7 +7,7 @@
                     (get-empty-cells $t $carry (+ $counter 1)))
                 (get-empty-cells $t $acc (+ $counter 1))))))
 
-(=  (replace-by-index $bs $icon $index)
+(= (replace-by-index $bs $icon $index)
     (let ($h $t) (decons-atom $bs)
         (if (== $index 0)
             (cons-atom $icon $t)
