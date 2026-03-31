@@ -1,3 +1,4 @@
+
 !(import! &self ./Adversaries/helpers)
 !(import! &self ./Adversaries/minimax-player)
 !(import! &self utils)
@@ -12,9 +13,14 @@
 
 !(import! &self pln+gp)
 
+!(import! &self moses_bridge)
+
 !(bind! &totalGames (new-state 0))
 !(bind! &totalLoss (new-state 0))
 !(bind! &totalWins (new-state 0))
+
+; !(bind! &activeMosesStrategy (new-state ...))
+; !(bind! &stampState (new-state 0))
 
 (= (resetCounts)
    (let*
@@ -47,6 +53,8 @@
         ;; ($_ (py-call (run_evolution.backup_file "WM/state.metta")))
         ($_ (resetCounts))
 
+        ;; the MOSES evolution goes here
+        ($_ (update-moses-strategy $adversary))
         ($_ (runTest $n X $adversary))
 
         ;; Collected states
@@ -76,6 +84,7 @@
         ($_ (println! ($plnWinMovesPercent percent of the moves made by pln were winning move plans)))
         ($_ (println! (===================================================)))
         ($_ (println! ""))
+        ($_ (cut))
 
         ;; ($_ (py-call (run_evolution.restore_file "WM/perception.metta")))
         ;; ($_ (py-call (run_evolution.restore_file "WM/belief.metta")))
@@ -94,23 +103,23 @@
            ((GameWinner $winner) (initGameState $player $adversary))
            ($_ (if (!= $winner NoOne) (println! (Winner: (if (== $opponent $winner) Adversary PLN+GP))) true))
 
-           ($tgr (increment &totalGames))
+           ($tgr (incrementState &totalGames))
            ($ttl (if (== $winner $opponent)
-                     (increment &totalLoss)
+                     (incrementState &totalLoss)
                      (if (== $winner $player)
-                         (increment &totalWins)
+                         (incrementState &totalWins)
                          ())))
          )
          (runTest (- $n 1) $opponent $adversary))))
 
 ;; Training
 !(testLearning 5 Random) ;; Should be 3
-!(testLearning 7 GP6O) ;; Should be 5
-!(testLearning 10 GP12X) ;; Should be 7
+; !(testLearning 7 GP6O) ;; Should be 5
+; !(testLearning 10 GP12X) ;; Should be 7
 !(testLearning 15 MiniMax) ;; Should stay the same
 
-;; Test
-!(testLearning 5 MiniMax)
+; ;; Test
+; !(testLearning 5 MiniMax)
 
 ;; !(initGameState X Human)
 ;; !(testLearning 5 Random)
