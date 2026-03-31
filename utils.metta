@@ -21,7 +21,7 @@
         (let* (
             ($initial (car-atom $list))
             ($cur (max-atom $list $op))
-            ($_ (println! (Curr: $cur)))
+            ($__1 (println! (Curr: $cur)))
             ($newList (subtraction-atom $list ($cur))) ;since the subtractionAtom (the custom one) isn't working now but this subtraction-atom does same thing.
             ($rest (selectionSort $newList (- $n 1) $op))
         )
@@ -60,10 +60,10 @@
 (= (load_to_metta $x)
    (let*
       (
-        ($_ (import! &self $x))
+        ($__2 (import! &self $x))
         ($content (match &self (Loadable $content) $content))
-        ($_ (remove-atom &self (Loadable $content)))
-        ($_ (py-call (run_evolution.remove_file $x)))
+        ($__3 (remove-atom &self (Loadable $content)))
+        ($__4 (py-call (run_evolution.remove_file $x)))
       )
       $content))
 
@@ -75,13 +75,13 @@
      (
        ($stringExpressions (collapse (let $expression (superpose $mettaExpressions) (py-call (utils.to_metta_str $expression)))))
        ($newStrExpressions (py-call (utils.join_metta_strs $stringExpressions)))
-       ($_ (py-call (utils.add_to_file $fileName $newStrExpressions)))
+       ($__5 (py-call (utils.add_to_file $fileName $newStrExpressions)))
      )
      true))
 
 (= (saveExpression $fileName $mettaExpression)
    (let $strExpression (py-call (utils.to_metta_str $mettaExpression))
-   (let $_ (py-call (utils.add_to_file $fileName $strExpression)) true)))
+   (let $__6 (py-call (utils.add_to_file $fileName $strExpression)) true)))
 
 (= (clearSpace $space) (let $result (collapse (match $space $x (remove-atom $space $x))) true))
 
@@ -98,7 +98,7 @@
       ($boards (zipWith != $board1 $board2))
       ($idxs (genIdx (length $boards)))
       ($boardIdxs (zip $boards $idxs))
-      ((($_ $idx)) (filter-atom $boardIdxs (first-from-pair)))
+      ((($__7 $idx)) (filter-atom $boardIdxs (first-from-pair)))
      )
      $idx
    ))
