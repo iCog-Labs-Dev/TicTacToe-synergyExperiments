@@ -1,17 +1,17 @@
-!(import! &self ../neighborhood-sampling)
+!(import! &self ../../utilities/general-helpers)
+!(import! &self ../../utilities/list-methods)
+!(import! &self ../../utilities/nodeId)
+!(import! &self ../../utilities/tree)
+!(import! &self ../../utilities/ordered-multimap)
+!(import! &self ../../utilities/lazy-random-selector)
 !(import! &self ../../representation/instance)
 !(import! &self ../../representation/knob-representation)
 
-!(import! &self ../../utilities/tree)
-!(import! &self ../../utilities/nodeId)
-!(import! &self ../../utilities/list-methods)
-;;! (import! &self metta-moses:utilities:python-helpers)
-!(import! &self ../../utilities/general-helpers)
-!(import! &self ../../utilities/ordered-multimap)
-!(import! &self ../../utilities/lazy-random-selector)
+!(import! &self ../../scoring/cscore)
 !(import! &self ../../optimization/hillclimbing/hill-climbing-helpers) ;; using / for additional nested dir level 
 !(import! &self ../../deme/create-deme)
-!(import! &self ../../scoring/cscore)
+
+!(import! &self ../neighborhood-sampling)
 !(py-call (random.seed 0))
 
 ;; Test the distance function
@@ -26,11 +26,12 @@
 !(assertEqual (distance` (mkInst (Cons 1 (Cons 2 (Cons 1 (Cons 0 Nil))))) (mkInst (Cons 0 (Cons 1 (Cons 0 (Cons 0 Nil)))))) 3)
 
 
-;; Test case to check valid reduction of vary1Knobs
-!(assertEqual (=== (collapse (vary1Knobs (2 1) (0 0 0 0))) ((0 0 0 2) (0 0 0 1) (0 0 2 0) (0 0 0 2) (0 0 0 1) (0 0 1 0) (0 2 0 0) (0 0 0 2) (0 0 0 1) (0 0 2 0) (0 0 0 2) (0 0 0 1) (0 0 1 0) (0 1 0 0) (2 0 0 0) (0 0 0 2) (0 0 0 1) (0 0 2 0) (0 0 0 2) (0 0 0 1) (0 0 1 0) (0 2 0 0) (0 0 0 2) (0 0 0 1) (0 0 2 0) (0 0 0 2) (0 0 0 1) (0 0 1 0) (0 1 0 0) (1 0 0 0))) true)
-
-;; Test case to make sure it varyNKnobs reduce
-!(assertEqual (=== (collapse (let $a (varyNKnobs (2 1) (0 0 0 1) 2) (if (== (distance $a (0 0 0 1)) 0) (empty) $a))) ((1 0 0 2) (1 0 0 0) (1 0 2 1) (1 0 1 1) (1 2 0 1) (1 1 0 1) (2 0 0 1) (2 0 0 2) (2 0 0 0) (2 0 2 1) (2 0 1 1) (2 2 0 1) (2 1 0 1) (1 0 0 1) (0 1 0 2) (0 1 0 0) (0 1 2 1) (0 1 1 1) (0 2 0 1) (2 1 0 1) (1 1 0 1) (0 2 0 2) (0 2 0 0) (0 2 2 1) (0 2 1 1) (0 1 0 1) (2 2 0 1) (1 2 0 1) (0 0 1 2) (0 0 1 0) (0 0 2 1) (0 2 1 1) (0 1 1 1) (2 0 1 1) (1 0 1 1) (0 0 2 2) (0 0 2 0) (0 0 1 1) (0 2 2 1) (0 1 2 1) (2 0 2 1) (1 0 2 1) (0 0 0 2) (0 0 2 0) (0 0 1 0) (0 2 0 0) (0 1 0 0) (2 0 0 0) (1 0 0 0) (0 0 0 0) (0 0 2 2) (0 0 1 2) (0 2 0 2) (0 1 0 2) (2 0 0 2) (1 0 0 2))) true)
+;; Test case to make sure it varyNKnobs generates unique and all available neighbors.
+!(assertEqual (let*
+                (
+                  ($original (varyNKnobs (2 1) (0 0 0 1) 2))
+                  ($unique (unique-atom (varyNKnobs (2 1) (0 0 0 1) 2))))
+                (and (== (length $original) (length $unique)) (== (length $original) 32))) true)
 
 ;; At distance 2 should generate total of 32 neighbors
 ;; !(assertEqual (let $a (generateAllInNeighborhood (mkMultip 3) (mkInst (Cons 0 (Cons 0 (Cons 0 (Cons 0 Nil))))) 2) ((List.length $a) (get-type $a))) (32 (List Instance)))
@@ -132,22 +133,22 @@
 ; Function should returned two instances at the specified distance
 
 !(assertEqual
-     (let $returned (sampleFromNeighborhood 2 2 (knobMapObj) (mkInst (Cons 1 (Cons 2 (Cons 0 Nil)))) (mkMultip 3))
+     (let $returned (sampleFromNeighborhood 2 2 (knobMapObj) (mkInst (Cons 1 (Cons 2 (Cons 0 Nil)))))
        (List.map ((curry distance') (mkInst (Cons 1 (Cons 2 (Cons 0 Nil))))) $returned))
      (Cons 2 (Cons 2 Nil)))
 !(assertEqual
-     (let $returned (sampleFromNeighborhood 2 3 (knobMapObj) (mkInst (Cons 1 (Cons 2 (Cons 0 Nil)))) (mkMultip 3))
+     (let $returned (sampleFromNeighborhood 2 3 (knobMapObj) (mkInst (Cons 1 (Cons 2 (Cons 0 Nil)))))
        (List.map ((curry distance') (mkInst (Cons 1 (Cons 2 (Cons 0 Nil))))) $returned))
      (Cons 3 (Cons 3 Nil)))
 !(assertEqual
-     (let $returned (sampleFromNeighborhood 2 1 (knobMapObj) (mkInst (Cons 1 (Cons 2 (Cons 0 Nil)))) (mkMultip 3))
+     (let $returned (sampleFromNeighborhood 2 1 (knobMapObj) (mkInst (Cons 1 (Cons 2 (Cons 0 Nil)))))
        (List.map ((curry distance') (mkInst (Cons 1 (Cons 2 (Cons 0 Nil))))) $returned))
      (Cons 1 (Cons 1 Nil)))
 
 ;; Invalid (knobMapObj) or instance
 !(assertEqual
      (let $returned
-       (sampleFromNeighborhood 1 2 (knobMapObj) (mkInst Nil) (mkMultip 3)) $returned)
+       (sampleFromNeighborhood 1 2 (knobMapObj) (mkInst Nil)) $returned)
      (Cons (Error (3 0) "Not Equal") Nil))
 
 ;; Testcases for removeInstScore
@@ -213,12 +214,12 @@
 Nil)
 
 ; ; Testcase for sampleFromNeighborhood function when requested sample size is more than possible instances
-!(assertEqual (sampleFromNeighborhood 13 2 (knobMapObj) (mkInst (Cons 1 (Cons 2 (Cons 0 Nil)))) (mkMultip 3))
-        (Error ("Cannot generate " 13 " instances at distance " 2 " from " (mkInst (Cons 1 (Cons 2 (Cons 0 Nil))))) (Requested sample size too large)))
+!(assertEqual (let $result (sampleFromNeighborhood 13 2 (knobMapObj) (mkInst (Cons 1 (Cons 2 (Cons 0 Nil))))) (List.length $result)) 13) ;; This test case has been changed to generate the size even if there is a duplicate instead of throwing an error. That's how the classic version does it.
 
 
 
 ;;testcase for isPossibleSize function
 ;; Formula: n! / ((n - d)! * d!) * (m-1)^d  (n = instance length, d = distance, m = knob multiplicity)
-!(assertEqual (isPossibleSize 13 2 (mkInst (Cons 1 (Cons 2 (Cons 0 Nil)))) (mkMultip 3)) False)
-!(assertEqual (isPossibleSize 10 2 (mkInst (Cons 1 (Cons 2 (Cons 0 Nil)))) (mkMultip 3)) True)
+!(assertEqual (isPossibleSize 13 2 (mkInst (Cons 1 (Cons 2 (Cons 0 Nil))))) False)
+!(assertEqual (isPossibleSize 10 2 (mkInst (Cons 1 (Cons 2 (Cons 0 Nil))))) True)
+

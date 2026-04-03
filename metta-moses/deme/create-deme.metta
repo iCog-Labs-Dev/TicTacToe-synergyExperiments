@@ -14,10 +14,10 @@
 (= (createDeme $nDeme $demeIds $exemplar (mkITable $table $labels) $algo $prune-exemplar $enforced-fts $scorerType)
       (let* 
             (
-                  ($_ (println! "creating representations ...."))
-                  ($reps (eval (createRepresentation $nDeme $exemplar (mkITable $table $labels) $algo $prune-exemplar $enforced-fts  $scorerType)))
-                  ($_ (println! (done making representations ... $reps)))
-            )  
+                  ;; ($_ (println! "creating representations ...."))
+                  ($reps (createRepresentation $nDeme $exemplar (mkITable $table $labels) $algo $prune-exemplar $enforced-fts  $scorerType))
+                  ;; ($_ (println! (done making representations ... $reps)))
+            ) 
             (loopCreateDeme $demeIds $reps ())
       ) 
 )
@@ -30,9 +30,9 @@
 (= (createDeme $nDeme $demeIds $exemplar)
       (let* 
             (
-                  ($_ (println! "creating game representations ...."))
-                  ($reps (eval (createRepresentation $nDeme $exemplar)))
-                  ($_ (println! ("done making representations ..." $reps)))
+                  ;; ($_ (println! "creating game representations ...."))
+                  ($reps (createRepresentation $nDeme $exemplar))
+                  ;; ($_ (println! ("done making representations ..." $reps)))
             )  
             (loopCreateDeme $demeIds $reps ())
       ) 
@@ -46,10 +46,10 @@
             ($h (car-atom $reps))
             ($t (cdr-atom $reps)))
          (let* (
-                 ($demeId (eval (List.head $demeIds))) 
+                 ($demeId (List.head $demeIds)) 
                  ($deme (mkDeme $h (mkSInstSet Nil) $demeId))
                  ($new-acc (union-atom $acc ($deme))))     
-               (loopCreateDeme (eval (List.tail $demeIds)) $t $new-acc)))))
+               (loopCreateDeme (List.tail $demeIds) $t $new-acc)))))
 ;; previous version of loopCreateDeme using if-decons-expr-custom
 ;       (if-decons-expr-custom $reps $h $t
 ;             (let* (($demeId (List.head $demeIds)) 
@@ -57,4 +57,4 @@
 ;                    ($new-acc (union-atom $acc ($deme))))
                   
 ;                   (loopCreateDeme (List.tail $demeIds) $t $new-acc))
-;                $acc)
+;                $acc))    

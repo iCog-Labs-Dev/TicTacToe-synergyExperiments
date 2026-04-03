@@ -1,32 +1,20 @@
-; !(register-module! ../../../../metta-moses)
-
+!(import! &self ../../../../metta-moses/utilities/general-helpers)
+!(import! &self ../../../../metta-moses/utilities/list-methods)
+!(import! &self ../../../../metta-moses/utilities/tree)
 
 !(import! &self ../../../../metta-moses/representation/instance)
 !(import! &self ../../../../metta-moses/representation/representation)
 !(import! &self ../../../../metta-moses/representation/create-representation)
 
-!(import! &self ../../../../metta-moses/utilities/tree)
-!(import! &self ../../../../metta-moses/utilities/list-methods)
-; !(import! &self ../../../../metta-moses/utilities/python-helpers)
-!(import! &self ../../../../metta-moses/utilities/general-helpers)
 
 !(import! &self ../../../../metta-moses/scoring/cscore)
 
 !(import! &self ../../../../metta-moses/deme/create-deme)
 
-!(import! &self ../../../../metta-moses/optimization/hillclimbing/cross-top-one) ;; notice the / in the import statements -- looks like this is required for every additional inner level of dir you have to go
 !(import! &self ../../../../metta-moses/optimization/hillclimbing/cross-top-one-helpers)
+!(import! &self ../../../../metta-moses/optimization/hillclimbing/cross-top-one) ;; notice the / in the import statements -- looks like this is required for every additional inner level of dir you have to go
 
 (= (wScore) (* -1 (pow-math 10 100))) ;; bind worst score value 
-
-; (= (pyExprToList $expr) (py_exprToList $expr))
-
-;; NOTE!!!!!!!
-;; merger -- this is a function implemented as part if the main crossTopOne in optimization/hillclimbing/cross-top-one.metta but results in error unless this is imported in the test file
-;; (: merger (-> Expression Instance Instance Expression))
-;; (= (merger $targetInstances $baseInst $referenceInst)
-;;    (collapse (let (mkSInst (mkPair $targetInst $score)) (superpose $targetInstances)
-;;        (mkSInst (mkPair (mergeInstance $targetInst $baseInst $referenceInst) (worstCscore))))))
 
 (= (deme1) 
         (mkDeme 
@@ -90,7 +78,7 @@
                 (mkDscKbMp 
                     (ConsMap NilMap)) 
                     (mkDscMp NilMMap)) (mkTree (mkNode A) Nil))
-                        (mkSInstSet $list) $demeId) (crossTopOne (deme1) 3 0 4 (mkInst (Cons 2 Nil))) (assertEqual (eval (List.length $list)) 10))
+                        (mkSInstSet $list) $demeId) (crossTopOne (deme1) 3 0 4 (mkInst (Cons 2 Nil))) (assertEqual (List.length $list) 10))
 !(let
     (mkDeme 
         (mkRep 

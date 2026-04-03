@@ -13,28 +13,31 @@
 ;; helper function to the addLogicalKnobs
 ;; takes a tuple of knobs and return a tuple of knob and knobSpec pairs
 ;; (: pairKnobWithSpec (-> Expression Expression))
-(= (pairKnobWithSpec $tuple)   (map-atom $tuple $knob ( (eval (getKnobSpec $knob)) $knob) ))
+(= (pairKnobWithSpec $tuple)   (map-atom $tuple $knob ( (getKnobSpec $knob) $knob) ))
 
 ;; addLogicalKnobs
 ;; (: addLogicalKnobs (-> (Tree $a) NodeId Bool (MultiMap ($k $v)) Expression Expression))
 (= (addLogicalKnobs $exemplar $nodeId $addIfInExemplar $map $argLabels) 
-(let (mkTree (mkNode $op) $children) (eval (getNodeById $exemplar $nodeId))
-    (let* (
-        ;; Use complete game moves for strategy operators, argLabels for boolean operators
-        ($labels (if (== $op PRIORITIZED-OR) (getAllGameMoves) $argLabels))
-        ($lengthOfArgs (length $labels))
-        ;; Choose appropriate sampling function based on operator
-        ($perms (if (== $op PRIORITIZED-OR)
-                    (eval (sampleStrategyPerms $op $lengthOfArgs $labels))
-                    (eval (sampleLogicalPerms $op $lengthOfArgs $labels))))
-        ($treePerms (map-atom $perms $perm (buildTree $perm)))
-        ;; Use strategyProbe for PRIORITIZED-OR, logicalProbe for others
-        (($knobs $updatedTree) (if (== $op PRIORITIZED-OR)
-                                   (eval (strategyProbe $exemplar $nodeId $treePerms $addIfInExemplar ()))
-                                   (eval (logicalProbe $exemplar $nodeId $treePerms $addIfInExemplar ()))))
-        ($pairs (eval (pairKnobWithSpec $knobs)))
-        ($mmp (eval (expToMMap $pairs $map discSpec<=)))
-        ($temp (cut))
-    )
-    ($updatedTree $mmp)
-)))
+   (let*
+     (
+
+      ((mkTree (mkNode $op) $children) (getNodeById $exemplar $nodeId))
+      ;; ($_ (println! (Adding knobs to: (preOrder (mkTree (mkNode $op) $children)))))
+      ;; Use complete game moves for strategy operators, argLabels for boolean operators
+      ($labels (if (== $op PRIORITIZED-OR) (getAllGameMoves) $argLabels))
+      ($lengthOfArgs (length $labels))
+      ($perms (if (== $op PRIORITIZED-OR)
+                  (sampleStrategyPerms $op $lengthOfArgs $labels)
+                  (sampleLogicalPerms $op $lengthOfArgs $labels)))
+      ($treePerms (map-atom $perms $perm (buildTree $perm)))
+      (($knobs $updatedTree) (if (== $op PRIORITIZED-OR)
+                                 (strategyProbe $exemplar $nodeId $treePerms $addIfInExemplar ())
+                                 (logicalProbe $exemplar $nodeId $treePerms $addIfInExemplar ())))
+
+      ;; ($_ (println! (Adding (length $knobs) Knobs)))
+
+      ($pairs (pairKnobWithSpec $knobs))
+      ($mmp (expToMMap $pairs $map discSpec<))
+      ($temp (cut))
+     )
+     ($updatedTree $mmp)))

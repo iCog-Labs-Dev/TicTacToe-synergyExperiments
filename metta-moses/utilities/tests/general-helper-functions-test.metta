@@ -478,16 +478,16 @@
 
 ; ;; Test cases -- selectionSort
 !(println! ("testing selectionSort "))
-!(assertEqual (selectionSorts (4 1 9 2 8 3 25 2 9 73) 2 <) (1 2 4 9 8 3 25 2 9 73))
-!(assertEqual (selectionSorts (5 2 9 1 73 2 3 9 8 34 25) 3 >) (73 34 25 5 2 9 1 2 3 9 8))
-!(assertEqual (selectionSorts (1 73 2 3 1 9 8 34 1 25 1) 4 <) (1 1 1 1 73 2 3 9 8 34 25))
-!(assertEqual (selectionSorts () 2 >) ())
-!(assertEqual (selectionSorts (1 2 3) 4 >) (3 2 1))
+!(assertEqual (selectionSort (4 1 9 2 8 3 25 2 9 73) 2 <) (1 2 4 9 8 3 25 2 9 73))
+!(assertEqual (selectionSort (5 2 9 1 73 2 3 9 8 34 25) 3 >) (73 34 25 5 2 9 1 2 3 9 8))
+!(assertEqual (selectionSort (1 73 2 3 1 9 8 34 1 25 1) 4 <) (1 1 1 1 73 2 3 9 8 34 25))
+!(assertEqual (selectionSort () 2 >) ())
+!(assertEqual (selectionSort (1 2 3) 4 >) (3 2 1))
 
 ;; Test cases -- selectionSort with non numeric expressions
 !(println! ("Test cases -- selectionSort with non numeric expressions"))
-!(assertEqual (selectionSorts ((a b) (a b c) (d) (m o s e s)) 1 bySize) ((m o s e s) (a b) (a b c) (d)))
-!(assertEqual (selectionSorts ((a 1) (b 2) (d 10) (l 8)) 2 bySecondAtom) ((d 10) (l 8) (a 1) (b 2)))
+!(assertEqual (selectionSort ((a b) (a b c) (d) (m o s e s)) 1 bySize) ((m o s e s) (a b) (a b c) (d)))
+!(assertEqual (selectionSort ((a 1) (b 2) (d 10) (l 8)) 2 bySecondAtom) ((d 10) (l 8) (a 1) (b 2)))
 
 ; ;; Test cases --  selector
 !(println! ("testing selector "))
@@ -582,9 +582,9 @@
 !(assertEqual (coll.remove (ConsOMS 1 (ConsOMS 2 NilOMS)) 1) (ConsOMS 2 NilOMS))
 
 ;; Cscore comparisons via apply (inline mkCscore)
-!(println! ("apply >="))
+!(println! ("apply >"))
 !(assertEqual
-  (apply >= (mkCscore -2.0 3.0 1.0 0.5 -3.5)
+  (apply > (mkCscore -2.0 3.0 1.0 0.5 -3.5)
                (mkCscore -3.0 2.0 1.0 0.5 -4.5))
   True)
 !(println! ("apply <"))
@@ -594,9 +594,9 @@
   True)
 
 ;; Tie-breaker on complexity: equal pen score but lower complexity is greater
-!(println! ("apply >="))
+!(println! ("apply >"))
 !(assertEqual
-  (apply >= (mkCscore -2.0 2.0 1.0 0.5 -3.5)
+  (apply > (mkCscore -2.0 2.0 1.0 0.5 -3.5)
                (mkCscore -2.0 3.0 1.0 0.5 -3.5))
   True)
   !(println! ("apply <"))
@@ -609,7 +609,7 @@
 
 !(println! ("apply >="))
 !(assertEqual
-  (apply >= (mkCscore -2.0 3.0 1.0 0.5 -3.5)
+  (apply > (mkCscore -2.0 3.0 1.0 0.5 -3.5)
                (mkCscore -1.0 2.0 1.0 0.5 nan))
   True)
 !(println! ("apply <"))
@@ -627,7 +627,7 @@
 
 ;; ScoredInstance comparisons via apply should project to inner Cscore (inline)
 !(assertEqual
-  (apply >=
+  (apply >
     (mkSInst (mkPair (mkInst (Cons 1 (Cons 2 Nil))) (mkCscore -2.0 3.0 1.0 0.5 -3.5)))
     (mkSInst (mkPair (mkInst (Cons 3 Nil))               (mkCscore -3.0 2.0 1.0 0.5 -4.5))))
   True)

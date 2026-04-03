@@ -1,7 +1,6 @@
-!(import! &self ../../utilities/list-methods)
-!(import! &self ../../utilities/tree)
-!(import! &self ../../utilities/nodeId)
 !(import! &self ../../utilities/general-helpers)
+!(import! &self ../../utilities/list-methods)
+!(import! &self ../../utilities/nodeId)
 
 !(import! &self ../../reduct/boolean-reduct/rte-helpers)
 !(import! &self ../../reduct/boolean-reduct/cut-unnecessary-or)
@@ -14,6 +13,8 @@
 !(import! &self ../../reduct/boolean-reduct/promote-common-constraints)
 !(import! &self ../../reduct/boolean-reduct/reduce-to-elegance)
 
+!(import! &self ../../utilities/tree)
+
 !(import! &self ../lsk)
 !(import! &self ../knob-representation)
 !(import! &self ../logical-probe) 
@@ -22,8 +23,8 @@
 !(import! &self ../sample-logical-perms) 
 !(import! &self ../add-logical-knobs)
 
-; Testcases for logicalSubtreeKnob
-; Testcase 1: When the subtree isn't found in the target's children list
+;; Testcases for logicalSubtreeKnob
+;; Testcase 1: When the subtree isn't found in the target's children list
 
 !(assertEqual
   (logicalSubtreeKnob
@@ -73,10 +74,10 @@
                         (Cons (mkTree (mkNode B) Nil) Nil)) Nil)) Nil)))
     (mkNodeId (2))
     (mkTree (mkNode B) Nil))
-    ((mkTree (mkNode AND) (Cons (mkTree (mkNode A) Nil) 
-      (Cons (mkNullVex (Cons (mkTree (mkNode NOT) (Cons (mkTree (mkNode B) Nil) Nil)) 
-      (Cons (mkNullVex (Cons (mkTree (mkNode B) Nil) Nil)) Nil))) Nil))) 
-      (mkLSK (mkDiscKnob (mkKnob (mkNodeId (2 2))) (mkMultip 3) (mkDiscSpec 0) (mkDiscSpec 0) Nil)))
+    ((mkTree (mkNode AND)
+      (Cons (mkTree (mkNode A) Nil)
+      (Cons (mkNullVex (Cons (mkTree (mkNode NOT) (Cons (mkTree (mkNode B) Nil) Nil)) Nil)) Nil))) 
+      (mkLSK (mkDiscKnob (mkKnob (mkNodeId (2 1))) (mkMultip 3) (mkDiscSpec 1) (mkDiscSpec 1) Nil)))
        )
 
 ;; getNodeId test cases
@@ -103,7 +104,7 @@
                             (Cons (mkTree (mkNode OR)
                                     (Cons (mkTree (mkNode B) Nil) Nil)) Nil)) Nil)) Nil))))
 ;; appendTo
-;; ;; invalid disc specification
+;; invalid disc specification
 !(assertEqual
   (appendTo
     (tree1)
@@ -137,9 +138,7 @@
     (mkNullVex  Nil)
     (mkNodeId (0))
     1)
-    (mkTree (mkNode AND) 
-        (Cons (mkTree (mkNode A) Nil) 
-        (Cons (mkTree (mkNode B) Nil) Nil))))
+    ((mkTree (mkNode AND) Nil) (mkNodeId (0)) (mkNodeId (1))))
 
 ; ;; Test case for insertion at a node
 ; ;; KnobSetting 2: (OR A) => (OR A (NOT (OR B)))
@@ -160,11 +159,7 @@
         (Cons (mkTree (mkNode A) Nil) Nil))
     (mkNodeId (0))
     2)
-    (mkTree (mkNode OR)
-        (Cons (mkTree (mkNode A) Nil)
-        (Cons (mkTree (mkNode NOT)
-                 (Cons (mkTree (mkNode OR)
-                 (Cons (mkTree (mkNode B) Nil) Nil)) Nil)) Nil)))
+    ((mkTree (mkNode OR) (Cons (mkTree (mkNode A) Nil) (Cons (mkTree (mkNode NOT) (Cons (mkTree (mkNode OR) Nil) Nil)) Nil))) (mkNodeId (2 1)) (mkNodeId (2 1)))
     )
 
 ;; KnobSetting 2: (OR A (AND)) => (OR A (AND (NOT (OR B))))
@@ -185,12 +180,7 @@
             (Cons (mkTree (mkNode AND) Nil) Nil)))
     (mkNodeId (2))
     2)
-    (mkTree (mkNode OR)
-                (Cons (mkTree (mkNode A) Nil)
-                (Cons (mkTree (mkNode AND)
-                        (Cons (mkTree (mkNode NOT)
-                                 (Cons (mkTree (mkNode OR)
-                                 (Cons (mkTree (mkNode B) Nil) Nil)) Nil)) Nil)) Nil)))
+    ((mkTree (mkNode OR) (Cons (mkTree (mkNode A) Nil) (Cons (mkTree (mkNode AND) (Cons (mkTree (mkNode NOT) (Cons (mkTree (mkNode OR) Nil) Nil)) Nil)) Nil))) (mkNodeId (2 1 1)) (mkNodeId (2 1 1)))
 )
 
 
@@ -210,12 +200,7 @@
     (mkTree (mkNode OR) (Cons (mkTree (mkNode A) Nil) Nil))
     (mkNodeId (0))
     0)
-
-    (mkTree (mkNode OR)
-             (Cons (mkTree (mkNode A) Nil)
-             (Cons (mkNullVex
-                     (Cons (mkTree (mkNode OR)
-                              (Cons (mkTree (mkNode B) Nil) Nil)) Nil)) Nil))))
+    ((mkTree (mkNode OR) (Cons (mkTree (mkNode A) Nil) Nil)) (mkNodeId (0)) (mkNodeId (0))))
 
 ;; Testcase 1: When the game move subtree isn't found in the target's children list
 !(assertEqual
@@ -290,9 +275,7 @@
     (mkNullVex Nil)
     (mkNodeId (0))
     1)
-    (mkTree (mkNode PRIORITIZED-OR) 
-        (Cons (mkTree (mkNode playcenter) Nil) 
-        (Cons (mkTree (mkNode playcorner) Nil) Nil))))
+    ((mkTree (mkNode PRIORITIZED-OR) Nil) (mkNodeId (0)) (mkNodeId (1))))
 
 ;; Test SSK KnobSetting 1: Present move
 !(assertEqual
@@ -309,9 +292,7 @@
         (Cons (mkTree (mkNode playcenter) Nil) Nil))
     (mkNodeId (0))
     1)
-    (mkTree (mkNode PRIORITIZED-OR)
-        (Cons (mkTree (mkNode playcenter) Nil)
-        (Cons (mkTree (mkNode playblock) Nil) Nil))))
+    ((mkTree (mkNode PRIORITIZED-OR) (Cons (mkTree (mkNode playcenter) Nil) (Cons (mkTree (mkNode playblock) Nil) Nil))) (mkNodeId (2 1)) (mkNodeId (2))))
 
 ;; Test SSK KnobSetting 0: Absent move (NullVex)
 !(assertEqual
@@ -327,7 +308,4 @@
     (mkTree (mkNode PRIORITIZED-OR) (Cons (mkTree (mkNode playcenter) Nil) Nil))
     (mkNodeId (0))
     0)
-    (mkTree (mkNode PRIORITIZED-OR)
-             (Cons (mkTree (mkNode playcenter) Nil)
-             (Cons (mkNullVex
-                     (Cons (mkTree (mkNode playblock) Nil) Nil)) Nil))))
+    ((mkTree (mkNode PRIORITIZED-OR) (Cons (mkTree (mkNode playcenter) Nil) Nil)) (mkNodeId (0)) (mkNodeId (0))))

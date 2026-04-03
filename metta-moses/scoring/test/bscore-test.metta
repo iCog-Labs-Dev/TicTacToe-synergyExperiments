@@ -1,10 +1,10 @@
-
-!(import! &self ../bscore)
-!(import! &self ../fitness)
-
-!(import! &self ../../utilities/tree)
-!(import! &self ../../utilities/list-methods)
 !(import! &self ../../utilities/general-helpers)
+!(import! &self ../../utilities/list-methods)
+!(import! &self ../../utilities/tree)
+
+!(import! &self ../fitness)
+!(import! &self ../bscore)
+
 
 ;; Test Types and type constructors    ;;; Fix: type system not working in peTTa 
 ;; !(assertEqual
@@ -20,6 +20,7 @@
 ; !(assertEqual
 ;    (let $a (createTruthTableBScore 0.2 (mkITable (Cons (Cons 1 (Cons 0 (Cons 2 Nil))) Nil) (Cons A (Cons B (Cons C Nil))))) (get-type $a))
 ;    (TruthTableBScore Number))
+
 !(assertEqual
    (createTruthTableBScore 0.2 (mkITable (Cons (Cons 1 (Cons 0 (Cons 2 Nil))) Nil) (Cons A (Cons B (Cons C Nil)))))
    (mkTruthTableBScore 0.2 1 (mkITable (Cons (Cons 1 (Cons 0 (Cons 2 Nil))) Nil) (Cons A (Cons B (Cons C Nil))))))
@@ -62,13 +63,14 @@
    (scoreTree (mkITable (Cons (Cons True (Cons False (Cons False Nil)))
                         (Cons (Cons True (Cons True  (Cons True Nil))) Nil)) 
                         (Cons A (Cons B (Cons O Nil)))) 
-              (buildTree (OR A B)))
+              (buildTree (OR A B)) &bscoreCache)
    (mkBScore (Cons -1 (Cons 0 Nil))))
+
 !(assertEqual
    (scoreTree (mkITable (Cons (Cons True (Cons False (Cons False Nil)))
                                    (Cons (Cons True (Cons True  (Cons True Nil))) Nil)) 
                                    (Cons A (Cons B (Cons O Nil)))) 
-              (buildTree (AND A B)))
+              (buildTree (AND A B)) &bscoreCache)
    (mkBScore (Cons 0 (Cons 0 Nil))))
 
 ;; Test sumBScore

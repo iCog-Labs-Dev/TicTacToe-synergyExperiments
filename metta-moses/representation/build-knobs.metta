@@ -7,5 +7,5 @@
 (= (buildKnobs $exemplar $mmp $argLabels)
     (let (mkTree (mkNode $rootOp) $children) $exemplar
         (if (== $rootOp PRIORITIZED-OR)
-            (eval (buildStrategy $exemplar (mkNodeId (0)) $mmp $argLabels))
-            (eval (buildLogical $exemplar (mkNodeId (0)) $mmp $argLabels)))))
+            (buildStrategy $exemplar (mkNodeId (0)) $mmp $argLabels)
+            (let $canonized (logicalCanonize $exemplar) (buildLogical $canonized (mkNodeId (0)) $mmp $argLabels)))))

@@ -1,7 +1,6 @@
 ;; Helper functions that are going to be useful for writing any metta code
 !(bind! perf_counter (new-state (py-call "time.perf_counter")))
-;; this might be the culprit that prevents the results from being random in the game setup
-; !(py-call (random.seed 0))
+;; !(py-call (random.seed 0))
 
 (= (round $x)(py-call ("round" $x)))    ;; python method calling is py-call unlike py-atom in mettalog 
 
@@ -17,7 +16,7 @@
   (let*
     (
       ($times (profile-helper $expr $n ()))
-      (() (println! (times: $times)))
+      ($_ (println! (times: $times)))
       ($avg (average $times))
       ($avgR (round $avg 3))
     )
@@ -126,7 +125,7 @@
 ;;    with a new one from a list of atoms.
 ;; INFO: This function needs to change so that it can preserve the
 ;;        operator's position when MeTTa version is upgraded.
-(= (findAndReplace $old $new $list) ;; FIX: No longer working on version 0.2.3
+(= (findAndReplace $old $new $list)
     ; (let*
     ;   (
     ;     ($log (println! ""))
@@ -234,7 +233,7 @@
 
 ;;
 ; ;; Add numbers in an atom list
-; (= (sum $list) (foldl-atom $list 0 $acc $x (+ $acc $x)))
+(= (sum $list) (foldl-atom $list 0 $acc $x (+ $acc $x)))
 
 ;; Function to count atom occrence in a list of atoms.
 (= (count $t $list)(let $r (filter-atom $list $x (== $x $t)) (length $r)))
@@ -289,29 +288,29 @@
 ;        (Error Unit Or Symbol cannot be deconstructed)))
 
 ;; Function to create a tuple of tuples given two equal length list of atoms. ;; FIX: No longer working on version 0.2.3
-; (= (zip $a $b)
-;    (if (or (hasOneAtom $a) (hasOneAtom $b))
-;        (((car-atom $a) (car-atom $b)))
-;        (let*
-;           (
-;             (($x $xs) (decons $a))
-;             (($y $ys) (decons $b))
-;             ($rest (zip $xs $ys))
-;           )
-;           (cons-atom ($x $y) $rest)))
-; )
+(= (zip $a $b)
+   (if (or (hasOneAtom $a) (hasOneAtom $b))
+       (((car-atom $a) (car-atom $b)))
+       (let*
+          (
+            (($x $xs) (decons $a))
+            (($y $ys) (decons $b))
+            ($rest (zip $xs $ys))
+          )
+          (cons-atom ($x $y) $rest)))
+)
 
 ;; Similar to zip but instead of just creating a tuple of atoms,
 ;;  it performes an operation of $f on them and returns the resulting list of atoms.
 ;; (: zipWith (-> (-> $a $b $c) $d $e $f))
-; (= (zipWith $f $xs $ys)
-;    (if (== $xs ())                      ; We assume (arity $xs) == (arity $ys)
-;        ()
-;        (let* ((($xs-hd $xs-tl) (decons $xs))
-;               (($ys-hd $ys-tl) (decons $ys))
-;               ($head ($f $xs-hd $ys-hd))
-;               ($tail (zipWith $f $xs-tl $ys-tl)))
-;          (cons-atom $head $tail))))
+(= (zipWith $f $xs $ys)
+   (if (== $xs ())                      ; We assume (arity $xs) == (arity $ys)
+       ()
+       (let* ((($xs-hd $xs-tl) (decons $xs))
+              (($ys-hd $ys-tl) (decons $ys))
+              ($head ($f $xs-hd $ys-hd))
+              ($tail (zipWith $f $xs-tl $ys-tl)))
+         (cons-atom $head $tail))))
 
 ;; Finds length of a tuple ;; FIX: No longer working on version 0.2.3
 (= (len $expr)
@@ -387,8 +386,8 @@
 )
 
 ;; Function to empty a space with contents.
-; (= (clearSpace $space)
-;    (collapse (let $content (get-atoms $space) (remove-atom $space $content))))
+(= (clearSpace $space)
+   (collapse (let $content (get-atoms $space) (remove-atom $space $content))))
    
 ;; Function that merges two sorted lists while keeping them sorted.
 (= (merge $xs $ys) (merge $xs $ys <=))
@@ -444,16 +443,16 @@
 
 ;; function to partially sort the smallest $n Atoms from an expression
 ; (: selectionSort (-> Expression Number Expression))
-(= (selectionSorts $list $n) (selectionSorts $list $n <))
+(= (selectionSort $list $n) (selectionSort $list $n <))
 ; (: selectionSort (-> Expression Number (-> $a $a Bool) Expression))
-(= (selectionSorts $list $n $op)
+(= (selectionSort $list $n $op)
     (if (or (== $n 0) (== $list ()))
         $list
      (let* (
         ($initial (car-atom $list))
         ($cur (selector $list $initial $op))
         ($newList (subtraction-atom $list ($cur))) ;since the subtractionAtom (the custom one) isn't working now but this subtraction-atom does same thing.
-        ($rest (selectionSorts $newList (- $n 1) $op))
+        ($rest (selectionSort $newList (- $n 1) $op))
     )
     (cons-atom $cur $rest)
     )))
@@ -704,7 +703,7 @@
 
 ;; From a tuple (Pair) return the first element
 ; (: first (-> ($a $b) $a))
-(= (first ($a $b)) $a)
+;; (= (first ($a $b)) $a)
 
 ;; From a tuple (Pair) return the second element
 ; (: second (-> ($a $b) $b))
@@ -745,7 +744,7 @@
     (if (< $u $l)
         ()
         (let $res (genList $l (- $u 1))
-            (cons-atom $u $res) )))
+            (union-atom $res ($u)))))
 
 ;; swap AND , OR 
 ; (: swapAndOr (-> Atom Atom))
@@ -760,7 +759,7 @@
 ; (: compose (-> (-> $b $c) (-> $a $b) (-> $a $c)))
 ; The previous `compose` definition  extra parentheses, which caused parsing issues during PeTTa-to-Prolog translation.
 ; After removing them, the function now works smoothly and remains compatible with previous calling styles.
-; (= (compose $g $f $x)($g ($f $x)))
+(= (compose $g $f $x)($g ($f $x)))
 
 ;; approximate equality -- takes the relative magnitude of the numbers into consideration
 
@@ -867,11 +866,11 @@
 ;; ============================================================
 
 ;; Generic comparison via key-projection and comparators
-(= (apply >= $x $y)
+(= (apply > $x $y)
    (case ((key-of $x) (key-of $y))
      (
-       (((KPair $a1 $b1) (KPair $a2 $b2)) (or (> $a1 $a2) (and (== $a1 $a2) (>= $b1 $b2))))
-       (((KScalar $kx) (KScalar $ky)) (>= $kx $ky))
+       (((KPair $a1 $b1) (KPair $a2 $b2)) (or (> $a1 $a2) (and (== $a1 $a2) (> $b1 $b2))))
+       (((KScalar $kx) (KScalar $ky)) (> $kx $ky))
      )))
 
 (= (apply < $x $y)
@@ -1187,7 +1186,7 @@
 
 ;; It will increment the input by 1.
 ; (: increment (-> Number Number))
-; (= (increment $x) (+ $x 1))
+(= (increment $x) (+ $x 1))
 
 ;; A function that turns every atom to unit
 (: transformToUnit (-> Atom Atom))
@@ -1204,7 +1203,7 @@
 (= (if-equal2 $A $B $Then $Else)
    (if (== $A $B) $Then $Else))
 
-(= (assertEqual $a $b)( (test $a $b))) ;;unlike assert function test function shows the expected and got output so this may be better for debuging simply.
+(= (assertEqual $a $b) ( (test $a $b))) ;;unlike assert function test function shows the expected and got output so this may be better for debuging simply.
 
 (= (assertAlphaEqual $A $B)
    (assert (=alpha $A $B)))
@@ -1294,23 +1293,15 @@
 
 ;; replicates MeTTaLog's union-atom builtin function, i.e., keeps one copy of items present in both lists
 (= (union-atom-set $a $b)
-   (if (= $b ())
-        $a
-        (let $b-new 
-            (collapse 
-                (let $bs (superpose $b) 
-                                    (if (is-member $bs $a)
-                                        (empty)
-                                        $bs))) 
-            (union-atom $a $b-new))))
+   (let $u (union-atom $a $b) (list_to_set $u)))
 
 ; Returns a random integer (0, 1, or 2) biased toward 0.
 ; ~50% chance to return 0, otherwise randomly 1 or 2.
 ;; (: biasedRandomInt (-> Number))
 (= (biasedRandomInt)
-   (if (== (random-int 0 1) 0)  ; 50% chance
+   (if (== (py-call (random.randint 0 1)) 0)  ; 50% chance
        0
-       (random-int 1 2)))      ; 1 or 2
+       (py-call (random.randint 1 2))))      ; 1 or 2
 
 ; Custom implementation of the ceiling function
 ; Param: $num – the input number (may be fractional)

@@ -27,7 +27,7 @@
         
           (let*
             (
-              ($_ (println! (===Inside OneConstraintSubsume===)))
+              ;; ($_ (println! (===Inside OneConstraintSubsume===)))
               ; ($_ (println! (Parent: $parent Current: $current CommandSet: $commandSet)))
               ($head (car-atom $current))
               ($tail (cdr-atom $current))
@@ -41,10 +41,14 @@
                 (AND
                   (let*
                     (
-                      ($guardSet (eval (getGuardSet $current)))
+                      ($guardSet (getGuardSet $current))
                       ($common (collapse (intersection (superpose $guardSet) (superpose $commandSet))))
                     )
-                    (if (== $common ()) (trace! (Parent: $parent : Current : $current) ($parent $current False)) ((eval (removeElement ($current) $parent)) () True)) ;; remove current from parent.
+                    (if (== $common ())
+                        ;; (trace! (Parent: $parent : Current : $current)
+                                ($parent $current False)
+                        ;; )
+                        ((removeElement ($current) $parent) () True)) ;; remove current from parent.
                   )
                 )
                 ($else ($parent $current False))
