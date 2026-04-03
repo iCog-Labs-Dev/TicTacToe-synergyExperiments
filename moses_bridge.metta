@@ -120,7 +120,7 @@
                              ))) ;; default and Human fallback
           ;; Target perfect win score
           ;; ($__ (println! (opponent policy $opponentPolicy)))
-          ($$targetScore (mkCscore 5.0 5 1.43 0.0 3.57)) 
+          ($targetScore (mkCscore 5.0 5 1.43 0.0 3.57)) 
           ;; ($__ (println! "After target score"))
           ;; Run Moses to find best strategy
           ($mosesResult (runMoses
@@ -165,6 +165,6 @@
           ($move-made (moses-player $moses-strategy $board $player))
           ($_ (cut))
           ($new-board (bloatBoard (Board $move-made)))
-          ($unique-stamp (incrementState &stampState)))
-          
+          ($unique-stamp (eval (incrementState &stampState)))
+          )
           (Sentence ((Implication (Board $board) $new-board) (stv 0.5 0.3)) ($unique-stamp))))

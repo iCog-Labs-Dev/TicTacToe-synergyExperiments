@@ -1,9 +1,10 @@
-
-!(import! &self ./Adversaries/helpers)
-!(import! &self ./Adversaries/minimax-player)
 !(import! &self utils)
 
+!(import! &self moses_bridge)
+
+!(import! &self ./Adversaries/helpers)
 !(import! &self ./Adversaries/random-player)
+!(import! &self ./Adversaries/minimax-player)
 
 !(import! &self "gp12_x_player.py")
 !(import! &self "gp6_o_player.py")
@@ -12,8 +13,6 @@
 !(import! &self ./Adversaries/gp-6-o-player)
 
 !(import! &self pln+gp)
-
-!(import! &self moses_bridge)
 
 !(bind! &totalGames (new-state 0))
 !(bind! &totalLoss (new-state 0))
@@ -54,7 +53,7 @@
         ($_ (resetCounts))
 
         ;; the MOSES evolution goes here
-        ($_ (update-moses-strategy $adversary))
+        ;; ($_ (update-moses-strategy $adversary))
         ($_ (runTest $n X $adversary))
 
         ;; Collected states
@@ -98,7 +97,7 @@
        (let*
          (
            ($_ (println! "") )
-           ($opponent (flipPlayer $player))
+           ($opponent (eval (flipPlayer $player)))
            ($_ (println! (Running Game $n => Pln: $player $adversary : $opponent ...) ) )
            ((GameWinner $winner) (initGameState $player $adversary))
            ($_ (if (!= $winner NoOne) (println! (Winner: (if (== $opponent $winner) Adversary PLN+GP))) true))
@@ -113,18 +112,18 @@
          (runTest (- $n 1) $opponent $adversary))))
 
 ;; Training
-!(testLearning 5 Random) ;; Should be 3
-; !(testLearning 7 GP6O) ;; Should be 5
-; !(testLearning 10 GP12X) ;; Should be 7
-!(testLearning 15 MiniMax) ;; Should stay the same
+;; !(testLearning 5 Random) ;; Should be 3
+;; !(testLearning 7 GP6O) ;; Should be 5
+;; !(testLearning 10 GP12X) ;; Should be 7
+;; !(testLearning 15 MiniMax) ;; Should stay the same
 
 ; ;; Test
 ; !(testLearning 5 MiniMax)
 
-;; !(initGameState X Human)
-;; !(testLearning 5 Random)
-;; !(testLearning 5 MiniMax)
-;; !(testLearning 5 GP6O)
-;; !(testLearning 5 MiniMax)
-;; !(testLearning 5 GP12X)
-;; !(testLearning 15 MiniMax)
+;; !(initGameState O Human)
+!(testLearning 5 Random)
+!(testLearning 5 MiniMax)
+!(testLearning 5 GP6O)
+!(testLearning 5 MiniMax)
+!(testLearning 5 GP12X)
+!(testLearning 15 MiniMax)

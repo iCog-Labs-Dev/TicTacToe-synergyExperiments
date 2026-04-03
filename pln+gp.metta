@@ -15,20 +15,29 @@
 !(bind! &plnCommonMoves (new-state 0))
 !(bind! &totalMoves (new-state 0))
 
+(= (round $n $d) (py-call (round $n $d)))
+
 (= (STV $fact)
           (let*
             (
               ($m (if (= $fact ($link $a $b))
                       (foldall + (match &perception $fact 1) 0)
                       (foldall + (match &perception ($link $a $fact) 1) 0))) ;; Positive count
+
               ($N (match &stateSpace (GameCount $x) $x)) ;; Total count
-              ($s (py-call (round (/safe $m $N) 4)))
+              ($sRaw (/safe $m $N))
+              ($s (round $sRaw 4))
+              ($stv (stv (if (> $s 1) 1 $s) (round (/ $N (+ $N (K))) 4)))
+              ($_ (cut))
+              ;; ($_ (println! (Inside stv m: $m N: $N SRaw: $sRaw)))
               ;; ($_ (println! (M: $m fact: $fact)))
             )
-            (stv (if (> $s 1) 1 $s) (py-call (round (/ $N (+ $N (K))) 4))))
+            $stv
+            )
           )
 
 (= (incrementState $state) (let $n (get-state $state) (let $_ (change-state! $state (+ $n 1)) (get-state $state))))
+(= (decrementState $state) (let $n (get-state $state) (let $_ (change-state! $state (- $n 1)) (get-state $state))))
 (= (update-atoms $space $old $new) (match $space $old (let $_ (remove-atom $space $old) (add-atom $space $new))))
 
 (= (populate-belief $atoms)
@@ -117,30 +126,36 @@
           ;; ($_ (println! (Before pln)))
           ($winningState (GameWin $player)) ;; TODO: Also handle draw states
           ; ($winningPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board $winningState) 800 300 800))
-          ($_ (println! "Here"))
-          ($_ (println! (board $board)))
+          ;; ($_ (println! "Here"))
+          ;; ($_ (println! (board $board)))
           ($winningPlan (BC.drive &belief $winningState $board (S (S (S (S (S (S (S (S Z))))))))))
-          ($_ (println! (winning plansdsAD: $winningPlan)))
+          ;; ($_ (println! (winning plan: $winningPlan)))
           ($nextMove (if (!= $winningPlan ())
-                         (let $_ (println! (WinningPlan Found: $winningPlan))
-                              (let $wpr (incrementState &plnWinMoves) (getNextMove $board $winningPlan)))
+                         ;; (let $_ (println! (WinningPlan Found: $winningPlan))
+                              (let $wpr (incrementState &plnWinMoves) (getNextMove $board $winningPlan))
+                         ;; )
                         ;  (let $drawPlan (PLN.Query (collapse (get-atoms &belief)) (Inheritance $board Draw) 800 300 800)
                          (let $drawPlan (BC.drive &belief Draw $board (S (S (S (S (S (S (S (S Z)))))))))
-                              (if (!= $drawPlan ())
-                                  (let $_ (println! (DrawPlan Found: $drawPlan))
-                                      (let $dpr (incrementState &plnWinMoves) (getNextMove $board $drawPlan)))
-                                  ; (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
-                                  (let $commonPlan (BC.drive &belief (Board $row $rows) $board (S (S (S (S (S (S (S (S Z)))))))))
-                                      (if (!= $commonPlan ())
-                                          (let $cpr (incrementState &plnCommonMoves) (getNextMove $board $commonPlan))
-                                          ()))))))
+                              $drawPlan
+                              ;; (if (!= $drawPlan ())
+                              ;;     (let $_ (println! (DrawPlan Found: $drawPlan))
+                              ;;         (let $dpr (incrementState &plnWinMoves) (getNextMove $board $drawPlan)))
+                              ;;     ; (let $commonPlan (PLN.Query (collapse (get-atoms &belief)) (Implication $board (Board $row $rows)) 20 10 20)
+                              ;;     (let $commonPlan (BC.drive &belief (Board $row $rows) $board (S (S (S (S (S (S (S (S Z)))))))))
+                              ;;         (if (!= $commonPlan ())
+                              ;;             (let $cpr (incrementState &plnCommonMoves) (getNextMove $board $commonPlan))
+                              ;;             ())))
+                         )))
                                         
-          ($_ (println! (NextMove: $nextMove)))
-          ($gpMove (if (== $nextMove ())
+          ;; ($_ (println! (NextMove: $nextMove)))
+          ;; ($_ (println! (gp move $gpMove)))
+          ($gpMove 
+                  (if (== $nextMove ())
                       ;  (let $atoms (runGp $board $player) (BestCandidate ThompsonRank () $atoms))
-                      (eval (moses-player-exec $board $player))
-                       $nextMove))
-          ($_ (println! (gp move $gpMove)))
+                      (let $umsr (update-moses-strategy MiniMax) (eval (moses-player-exec $board $player)))
+                      $nextMove
+                  )
+          )
           ((Sentence (($link $currentBoard $nextBoard) $stv) $id) $gpMove)
           ($tmr (incrementState &totalMoves))
 
@@ -182,12 +197,12 @@
             (MiniMax (let*
                         (
                           ((Board $miniMaxBoard) (load_board_metta $currentState))
-                          (($idx $nextBoard) (minimax-player $miniMaxBoard $opponent)))
+                          (($idx $nextBoard) (minimax-player-pln $miniMaxBoard $opponent)))
                         $idx))
             (Random (let*
                         (
                           ((Board $randomBoard) (load_board_metta $currentState))
-                          (($idx $nextBoard) (random-player $randomBoard $opponent)))
+                          (($idx $nextBoard) (random-player-pln $randomBoard $opponent)))
                         $idx))
             (GP12X (let*
                                     (
@@ -258,6 +273,7 @@
           ($npa (add-atom &newPerceptions (Board (Row E (Col E E)) (Rows (Row E (Col E E)) (Row E (Col E E))))))
 
           ($winningState (gameLoop $adversary $initState $player (== $player X)))
+          ($_ (cut))
           (($gameCount) (collapse (match &stateSpace (GameCount $x) $x)))
 
           ;; ($_ (println! ""))
@@ -269,7 +285,12 @@
           ($rp (savePerceptions))
 
           ;; Save the beliefs to file
+          ;; ($pbr (collapse (println! (get-atoms &belief))))
+          ;; ($_ (println! "==============================="))
+          ;; ($_ (println! ""))
           ($beliefs (populate-belief (collapse (get-atoms &perception))))
+          ;; ($pbr (collapse (println! (get-atoms &belief))))
+          ;; ($updatedBeliefs (PLN.Query $beliefs $x))
 
           ;; ($_ (println! ""))
           ;; ($_ (println! "AfterBeliefUpdate:"))
@@ -277,8 +298,11 @@
           ;; ($_ (println! ""))
 
           ($rb (saveBeliefs $beliefs))
+          ;; ($rb (saveBeliefs $updatedBeliefs))
           ($rc (saveCounts ($lastCount $gameCount)))
           ($csrs (collapse (clearSpace (superpose (&perception &newPerceptions &belief &newBeliefs &stateSpace))))) ;; Cleaning up the space for next execution ;; FIX: Preferably we want to keep this and terminate only when the game play is stopped.
+          ($_ (cut))
+
         )
         $winningState))
 
@@ -323,7 +347,7 @@
        (let*
           (
             ;; ($_ (println! (Inside game loop myTurn: $myTurn)))
-            ($opponent (flipPlayer $player))
+            ($opponent (eval (flipPlayer $player)))
             ($mettaBoard (bloatBoard (load_board_metta $currentState)))
             ($nextBoard (if $myTurn
                             (let $nextMettaBoard (move $mettaBoard $player) (load_board_python (flattenBoard $nextMettaBoard)))
