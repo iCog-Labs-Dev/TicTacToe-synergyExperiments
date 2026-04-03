@@ -21,7 +21,7 @@
         (let* (
             ($initial (car-atom $list))
             ($cur (max-atom $list $op))
-            ($__1 (println! (Curr: $cur)))
+            ;; ($__1 (println! (Curr: $cur)))
             ($newList (subtraction-atom $list ($cur))) ;since the subtractionAtom (the custom one) isn't working now but this subtraction-atom does same thing.
             ($rest (selectionSort $newList (- $n 1) $op))
         )
