@@ -74,6 +74,7 @@
          ($demeIds (createDemeIds $nExpansion $nDeme))
          ($demes (createDeme $nDeme $demeIds $tree))
          ($gameContext ($nGames $opponentPolicy $complexityRatio $targetCScore))
+         ($_ (cut))
       )
       (map-atom $demes $deme (expandDemeHelper $deme $gameContext $optimize))))
 
@@ -116,7 +117,6 @@ $optimDeme
   )
     (let*
      (
-       ;; ($_ (println! (Generation $maxGen)))
        ($optimizedDemes (case $context
                         ((($prune-exemplar $fs-algo $truthTableBScore $itable) (trace! "expand  deme returnn" (expandDeme $metaPop $nExpansion $nDeme $prune-exemplar $fs-algo $truthTableBScore $optimize $itable mi)))
                         (($nGames $opponentPolicy $complexityRatio) 

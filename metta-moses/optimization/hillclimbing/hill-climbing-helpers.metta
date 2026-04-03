@@ -251,6 +251,7 @@
         ($maxEvals 10000)
         ($nNewNeighbors (nNewInstances $d $maxEvals $currentNInstances $totalNNeighbors)) ;; TODO: MaxEvals is hardcoded here, but should be changed. This is set to 20K by default in OpenCog Classic.
 
+
         ($largeNbh (>= $totalNNeighbors $minXoverNeighbors))
         ($xOver (and (> $i 2) (and (not $alreadyXover) (or $largeNbh $lastChance)))) ;; INFO: Has to be greater than 2 minimum.
         ;; ($_ (println! (Crossover: $xOver)))
