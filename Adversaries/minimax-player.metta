@@ -4,7 +4,7 @@
 
 ;; Main entry point: Takes board and icon (player)
 ;; Returns the new board with the best move made
-(= (minimax-player $bs $player)
+(= (minimax-player-pln $bs $player)
    (let* (($opponent (get-opponent $player))
         ;; ($_1 (println! (opponent $opponent)))
           ($empty-indices (get-empty-cells $bs () 0))

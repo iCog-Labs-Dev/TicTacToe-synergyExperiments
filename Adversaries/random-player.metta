@@ -3,7 +3,7 @@
 ;; chooses the moves randomly
 ;;      $icon -- player symbol X or O
 
-(= (random-player $bs $icon)
+(= (random-player-pln $bs $icon)
     (let* (($empty-indices (get-empty-cells $bs () 0))
             ($count (length $empty-indices))
             ($pick (py-call (random.randint 0 (- $count 1))))
