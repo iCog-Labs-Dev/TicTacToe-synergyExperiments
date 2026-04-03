@@ -552,16 +552,16 @@
      ($candidates (collapse (case (superpose $BeliefsRet)
                                      (((Sentence ($Term $TV) $Ev) (case (= $Term $term)
                                                                        ((True (Sentence ($Term $TV) $Ev)))))))))
-     ($stvs (collapse (let (Sentence ($Term $stv) $Ev) (superpose $candidates) ($stv $Ev))))
-     ($stvEvPair (BestCandidate ConfidenceRank () $stvs))
-     ($bestCandidate (collapse (let*
-                                    (
-                                      (($bestStv $ev) $stvEvPair)
-                                      ((Sentence ($Term $bestStv) $ev) (superpose $candidates)))
-                                    (Sentence ($Term $bestStv) $ev))))
+     ;; ($stvs (collapse (let (Sentence ($Term $stv) $Ev) (superpose $candidates) ($stv $Ev))))
+     ;; ($stvEvPair (BestCandidate ConfidenceRank () $stvs))
+     ;; ($bestCandidate (collapse (let*
+     ;;                                (
+     ;;                                  (($bestStv $ev) $stvEvPair)
+     ;;                                  ((Sentence ($Term $bestStv) $ev) (superpose $candidates)))
+     ;;                                (Sentence ($Term $bestStv) $ev))))
    )
-    (if (!= $bestCandidate ()) (car-atom $bestCandidate) ())
-   ;; (superpose $candidates)
+    ;; (if (!= $bestCandidate ()) (car-atom $bestCandidate) ())
+   $candidates
    )
    ;; (BestCandidate ConfidenceRank () (collapse (let ($TasksRet $BeliefsRet) (PLN.Derive $Tasks $Beliefs $maxsteps $taskqueuesize $beliefqueuesize)
    ;;                                                 (case (superpose $BeliefsRet)
