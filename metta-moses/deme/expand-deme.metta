@@ -1,3 +1,10 @@
+(= (createInitialInstance $dscMp)
+   (let* (
+     ($knobs (MultiMap.values $dscMp))
+     ($defaults (List.map getKnobDefault $knobs))
+   )
+   $defaults))
+
 ;; Recursively optimizes each deme in a list using the provided optimizer function.
 ;; Params:
 ;;   (List Deme): The list of demes to optimize.
@@ -6,13 +13,12 @@
 ;;   $optimize: The optimizer function to apply to each deme.
 ;;  Returns: (List Deme): A new list where each deme has been optimized.
 ; (: optimizeDemes (-> (List Deme) $context Instance $optimize (Instance Deme $state)))
-;; Game strategy version - unpacks tuple with target score
 ;; Strategy version - unpacks game parameters and calls hillClimbing with mkParams
-(= (optimizeDemes $deme ($nGames $opponentPolicy $complexityRatio $targetCScore) $inst $optimize)
-   (eval ($optimize $deme $targetCScore $inst (mkParams applyStrategyBasedScore ($nGames $opponentPolicy $complexityRatio)))))
+(= (optimizeDemes $deme ($nGames $complexityRatio $targetCScore) $inst $optimize)
+   ($optimize $deme $targetCScore $inst (mkParams applyStrategyBasedScore ($nGames $complexityRatio))))
 ;; Boolean version - passes context as-is
 (= (optimizeDemes $deme $context $inst $optimize)
-   (eval ($optimize $deme $context $inst)))
+   ($optimize $deme $context $inst))
 
 ;; Extracts default specification from a knob
 ; (: getKnobDefault (-> $knob Number))
@@ -40,27 +46,34 @@
 (= (expandDeme $metaPop $nExpansion $nDeme $prune-exemplar $fs-algo $truthTableBScore $optimize $itable $scorerType)
 (let*
    (
-    ($exemplar (trace! "Selecting Exemplar" (eval (selectExemplar $metaPop))))
-    ($_ (println! $exemplar))
-    ($tree (trace! "getting exemplar tree" (eval (getExemplarTree $exemplar)))) 
-    ($_ (println! $tree))
-    ($demeIds (trace! "creating deme IDs" (eval (createDemeIds $nExpansion $nDeme))))
-    ($_ (println! $demeIds))
+    ;; ($_ (println! ""))
+    ;; ($_ (println! (MetaPop: $metaPop)))
+    ;; ($_ (println! "Selecting Exemplar"))
+    ($exemplar (selectExemplar $metaPop))
+    ;; ($_ (println! $exemplar))
+    ;; ($_ (println! "getting exemplar tree"))
+    ($tree (getExemplarTree $exemplar)) 
+    ;; ($_ (println! (SelectedTree: (preOrder $tree))))
+    ;; ($_ (println! "creating deme IDs"))
+    ($demeIds (createDemeIds $nExpansion $nDeme))
+    ;; ($_ (println! $demeIds))
     ; ($argLabels (getArgLabels $itable))
-    ($demes (trace! "Creating Deme" (eval (createDeme $nDeme $demeIds $tree $itable $fs-algo $prune-exemplar () $scorerType))))     
+    ;; ($_ (println! "Creating Deme"))
+    ($demes (createDeme $nDeme $demeIds $tree $itable $fs-algo $prune-exemplar () $scorerType))
     )
     (map-atom $demes $deme (expandDemeHelper $deme $truthTableBScore $optimize))
    ))
 
-;; Overloaded version for game strategy domain - 8 parameters
-(= (expandDeme $metaPop $nExpansion $nDeme $nGames $opponentPolicy $complexityRatio $targetCScore $optimize)
+;; Overloaded version for game strategy domain - 7 parameters
+(= (expandDeme $metaPop $nExpansion $nDeme $nGames $complexityRatio $targetCScore $optimize)
    (let*
       (
-         ($exemplar (trace! "Selecting Exemplar" (eval (selectExemplar $metaPop))))
-         ($tree (trace! "getting exemplar tree" (eval (getExemplarTree $exemplar))))
-         ($demeIds (trace! "creating deme IDs" (eval (createDemeIds $nExpansion $nDeme))))
-         ($demes (trace! "Creating Deme" (eval (createDeme $nDeme $demeIds $tree))))
-         ($gameContext ($nGames $opponentPolicy $complexityRatio $targetCScore))
+         ($exemplar (selectExemplar $metaPop))
+         ($tree (getExemplarTree $exemplar))
+         ($demeIds (createDemeIds $nExpansion $nDeme))
+         ($demes (createDeme $nDeme $demeIds $tree))
+         ($gameContext ($nGames $complexityRatio $targetCScore))
+         ($_ (cut))
       )
       (map-atom $demes $deme (expandDemeHelper $deme $gameContext $optimize))))
 
@@ -74,10 +87,13 @@
 (= (expandDemeHelper (mkDeme (mkRep (mkKbMap (mkDscKbMp $dscKbMp) (mkDscMp $dscMp)) $updatedTree) $sInstList $demeId) $context $optimize)
 (let*
 (
-    ($lengthOfDscKbMp (eval (Map.length $dscKbMp)))
-    ($generatedList (eval (List.generate $lengthOfDscKbMp 0)))
+    ($lengthOfDscKbMp (Map.length $dscKbMp))
+    ;; ($generatedList (List.generate $lengthOfDscKbMp 0))
+    ($generatedList (createInitialInstance $dscMp))
     ($deme (mkDeme (mkRep (mkKbMap (mkDscKbMp $dscKbMp) (mkDscMp $dscMp)) $updatedTree) $sInstList $demeId))
-    (($inst $optimDeme $state) (trace! "Optimizing Deme" (eval (optimizeDemes $deme $context (mkInst $generatedList) $optimize))))
+    ;; ($_ (println! (Rep: (mkRep (mkKbMap (mkDscKbMp $dscKbMp) (mkDscMp $dscMp)) $updatedTree))))
+    ;; ($_ (println! "Optimizing Deme"))
+    (($inst $optimDeme $state) (optimizeDemes $deme $context (mkInst $generatedList) $optimize))
 )
 $optimDeme
 ))
@@ -89,28 +105,53 @@ $optimDeme
 ;;     - $maxCandOutput : The number of candidates to be returned
 ;;     - other parameters required by the expandDeme method
 ; (: runMoses (-> Number Cscore Number (OS (Exemplar $a)) Number Number Bool Symbol (TruthTableBScore $a) (-> Deme (TruthTableBScore $a) Instance $Scorer (Instance Deme $state)) $Scorer Number Number Number Number (ITable $a) Number Number Number (OS (Exemplar $a))))
+;; TODO: $nEval isn't being used. Increase it so that it works as expected. 
+;; To enable that, we may need to change our termination condition so that the generation is equivalent to the number of expansion as well.
+;; The number of expansions in the open cog classic is equivalent to the number of deme expansions. That looks like the same thing we are doing here but not sure.
 (= (runMoses $maxGen $maxScore $maxCandOutput $metaPop $nExpansion $nDeme $context $optimize $nEval $maxCandsPerDeme $minPoolSize $complexityTemperature $nToKeep $capCoef $genCount)
-   (if (== $maxGen 0)
-    (if (<= $maxCandOutput (eval (OS.length $metaPop)))
-        (let $topCandidates (eval (OS.getTopN $maxCandOutput $metaPop)) $topCandidates)
+(if (== $maxGen 0)
+    (if (<= $maxCandOutput (OS.length $metaPop))
+        (let $topCandidates (OS.getTopN $maxCandOutput $metaPop) $topCandidates)
         $metaPop
-    )
-    (let* 
-     (  ($_ (println! "Before cases"))
+  )
+    (let*
+     (
        ($optimizedDemes (case $context
-                        ((($prune-exemplar $fs-algo $truthTableBScore $itable) (trace! "expand  deme returnn" (eval (expandDeme $metaPop $nExpansion $nDeme $prune-exemplar $fs-algo $truthTableBScore $optimize $itable mi))))
-                        (($nGames $opponentPolicy $complexityRatio) (trace! "expand deme return" (eval (expandDeme $metaPop $nExpansion $nDeme $nGames $opponentPolicy $complexityRatio $maxScore $optimize)))))))
+                        ((($prune-exemplar $fs-algo $truthTableBScore $itable) (trace! "expand  deme returnn" (expandDeme $metaPop $nExpansion $nDeme $prune-exemplar $fs-algo $truthTableBScore $optimize $itable mi)))
+                        (($nGames $complexityRatio) 
+                                 (expandDeme $metaPop $nExpansion $nDeme $nGames $complexityRatio $maxScore $optimize)
+                        ))))
+       (((mkDeme $rep $sInst $demeId)) $optimizedDemes)
+       ;; ($_ (println! (OptimizedDeme: (List.length (second $sInst)))))
        ($updatedMetaPop (case $context 
-                        ((($prune-exemplar $fs-algo $truthTableBScore $itable) (trace! "Merging Deme" (eval (mergeDemes $optimizedDemes $nEval $maxCandsPerDeme $minPoolSize $complexityTemperature $itable $metaPop $nToKeep $capCoef $genCount))))
-                        (($nGames $opponentPolicy $complexityRatio) (trace! "Merging Deme" (eval (mergeDemes $optimizedDemes $nEval $maxCandsPerDeme $minPoolSize $complexityTemperature ($nGames $opponentPolicy) $metaPop $nToKeep $capCoef $genCount)))))))
-       ($_ (println! (Updated MetaPop: $updatedMetaPop)))
-       ($top (eval (OS.getByIdx 0 $metaPop)))
-       ($_ (println! (Top Exemplar before expansion: $top)))
-       ($topScore (eval (getExemplarCscore $top)))
-       ($_ (println! (topscore: $topScore)))
-       ($resultCandi (if (<= $maxCandOutput (eval (OS.length $metaPop))) (eval (OS.getTopN $maxCandOutput $metaPop)) $metaPop))
+                        ((($prune-exemplar $fs-algo $truthTableBScore $itable) 
+                                   (mergeDemes $optimizedDemes $nEval $maxCandsPerDeme $minPoolSize $complexityTemperature $itable $metaPop $nToKeep $capCoef $genCount)
+                         )
+                        (($nGames $complexityRatio) 
+                                   (mergeDemes $optimizedDemes $nEval $maxCandsPerDeme $minPoolSize $complexityTemperature $nGames $metaPop $nToKeep $capCoef $genCount)
+                        ))))
+
+       ;; ($_ (println! (Updated MetaPop: $updatedMetaPop)))
+       ($top (OS.getByIdx 0 $metaPop))
+       ;; ($_ (println! (Top Exemplar before expansion: $top)))
+       ($topScore (getExemplarCscore $top))
+       ;; ($_ (println! (topscore: $topScore)))
+       ($resultCandi (if (<= $maxCandOutput (OS.length $updatedMetaPop)) (OS.getTopN $maxCandOutput $updatedMetaPop) $updatedMetaPop))
+       ;; ($_ (println! (Top: $topScore Max: $maxScore (cScore>= $topScore $maxScore))))
        ($_ (cut))
+       ;; ($_ (println! ""))
       )
-      (if (eval (cScore>= $topScore $maxScore))
-         $resultCandi 
-         (eval (runMoses (- $maxGen 1) $maxScore $maxCandOutput $updatedMetaPop $nExpansion $nDeme $context $optimize $nEval $maxCandsPerDeme $minPoolSize $complexityTemperature $nToKeep $capCoef $genCount))))))
+ (if (== $topScore $maxScore)
+         $resultCandi
+         (runMoses (- $maxGen 1) $maxScore $maxCandOutput $updatedMetaPop $nExpansion $nDeme $context $optimize $nEval $maxCandsPerDeme $minPoolSize $complexityTemperature $nToKeep $capCoef $genCount)))))
+
+
+;; Some helpers specific to final testing
+(= (mapG $f NilOS) NilOS)
+(= (mapG $f Nil) Nil)
+(= (mapG $f ($ctor $x $xs)) ($ctor ($f $x) (mapG $f $xs)))
+
+(= (printExemplar (mkExemplar $tree $demeId $cscore $bscore)) (println! (Tree: (preOrder $tree) CScore: $cscore Bscore: $bscore)))
+(= (cleanedExemplar (mkExemplar $tree $demeId $cscore (mkBScore $bscore))) ((preOrder $tree) (List.sum $bscore)))
+
+(= (printInstance (mkInst $inst)) (println! (List.listToExpr $inst)))
